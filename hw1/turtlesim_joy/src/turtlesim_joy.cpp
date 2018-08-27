@@ -8,7 +8,7 @@ class TurtleJoy {
     private:
         void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
-        ros::NodeHandle _nh;
+        ros::NodeHandle nh_;
         
         ros::Publisher vel_pub;
         ros::Subscriber joy_sub;
