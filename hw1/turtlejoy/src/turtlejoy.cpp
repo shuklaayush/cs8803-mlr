@@ -8,31 +8,28 @@ class TurtleJoy {
     private:
         void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
-        ros::NodeHandle nh_;
+        ros::NodeHandle nh;
         
         ros::Publisher vel_pub;
         ros::Subscriber joy_sub;
 
-        int linear_, angular_;
-        double l_scale, a_scale;
+        int linear_axis_pos = 5;
+        int linear_axis_neg = 2;
+        int angular_axis = 0;
+
+        double l_scale = 1.0;
+        double a_scale = 1.0;
 };
 
-TurtleJoy::TurtleJoy()
-    : linear_(1),
-      angular_(2) {
-    vel_pub = nh_.advertise<geometry_msgs::Twist>("/vrep/twistCommand", 1);
-    joy_sub = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &TurtleJoy::joyCallback, this);
-
-    nh_.param("axis_linear", linear_, linear_);
-    nh_.param("axis_angular", angular_, angular_);
-    nh_.param("scale_linear", l_scale, 0.1);
-    nh_.param("scale_angular", a_scale, 0.1);
+TurtleJoy::TurtleJoy() {
+    vel_pub = nh.advertise<geometry_msgs::Twist>("/vrep/twistCommand", 1);
+    joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 10, &TurtleJoy::joyCallback, this);
 }
 
 void TurtleJoy::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     geometry_msgs::Twist twist;
-    twist.angular.z = a_scale * joy->axes[angular_];
-    twist.linear.x = l_scale * joy->axes[linear_];
+    twist.angular.z = a_scale * joy->axes[angular_axis];
+    twist.linear.x = l_scale * (joy->axes[linear_axis_neg] - joy->axes[linear_axis_pos]) / 2.0;
     vel_pub.publish(twist);
 }
 
