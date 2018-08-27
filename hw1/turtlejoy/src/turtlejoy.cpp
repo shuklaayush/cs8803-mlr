@@ -20,7 +20,7 @@ class TurtleJoy {
 TurtleJoy::TurtleJoy()
     : linear_(1),
       angular_(2) {
-    vel_pub = nh_.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
+    vel_pub = nh_.advertise<geometry_msgs::Twist>("/vrep/twistCommand", 1);
     joy_sub = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &TurtleJoy::joyCallback, this);
 
     nh_.param("axis_linear", linear_, linear_);
