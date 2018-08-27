@@ -22,14 +22,19 @@ class TurtleJoy {
 };
 
 TurtleJoy::TurtleJoy() {
+    ROS_INFO("Starting turtlejoy with turtlejoy name %s", ros::this_node::getName().c_str());
+
     vel_pub = nh.advertise<geometry_msgs::Twist>("/vrep/twistCommand", 1);
     joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 10, &TurtleJoy::joyCallback, this);
 }
 
 void TurtleJoy::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     geometry_msgs::Twist twist;
-    twist.angular.z = a_scale * joy->axes[angular_axis];
     twist.linear.x = l_scale * (joy->axes[linear_axis_neg] - joy->axes[linear_axis_pos]) / 2.0;
+    twist.angular.z = a_scale * joy->axes[angular_axis];
+
+    ROS_DEBUG("[%s]: vel_x: %f omega_z: %f", nh.getNamespace().c_str(), twist.linear.x, twist.angular.z);
+
     vel_pub.publish(twist);
 }
 
