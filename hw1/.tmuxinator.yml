@@ -10,7 +10,7 @@ windows:
         - vrep:
           - until rostopic list ; do sleep 1; done
           - clear
-          - vrep -s $PRADALIER/scenes/rosControlKinect.ttt
+          - vrep -s $VREP_SCENES/rosControlKinect.ttt
         - rostopic:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
