@@ -20,7 +20,8 @@ windows:
           - until rostopic list ; do sleep 1; done
           - clear
           - rostopic echo /vrep/twistCommand
-        - rosrun turtlejoy roscpp_node
+        # - rosrun turtlejoy roscpp_node
+        - rosrun turtlejoy turtlejoy.py
   - build:
       layout: 4a3b,205x57,0,0{102x57,0,0,1,102x57,103,0[102x28,103,0,7,102x28,103,29,9]}
       panes:
