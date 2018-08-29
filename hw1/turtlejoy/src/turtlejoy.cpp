@@ -23,7 +23,7 @@ class TurtleJoy {
 };
 
 TurtleJoy::TurtleJoy() {
-  ROS_INFO("Starting turtlejoy with turtlejoy name %s", ros::this_node::getName().c_str());
+  ROS_INFO("Starting turtlejoy node with name %s", ros::this_node::getName().c_str());
 
   vel_pub = nh.advertise<geometry_msgs::Twist>("/vrep/twistCommand", 1);
   joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 10, &TurtleJoy::joyCallback, this);
