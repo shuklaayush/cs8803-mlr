@@ -22,9 +22,12 @@ windows:
           - rostopic echo /vrep/twistCommand
         - rosrun turtlejoy roscpp_node
   - build:
-      layout: even-horizontal
+      layout: 4a3b,205x57,0,0{102x57,0,0,1,102x57,103,0[102x28,103,0,7,102x28,103,29,9]}
       panes:
         - vim src/turtlejoy.cpp
+        - git:
+          - cd ../..
+          - clear
         - build:
           - cd ~/ros_ws/
           - clear
