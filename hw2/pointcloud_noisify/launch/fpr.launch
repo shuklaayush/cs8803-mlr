@@ -1,0 +1,6 @@
+<launch>
+
+  <node pkg="pointcloud_noisify" type="pointcloud_noisify" name="pointcloud_noisify" output="screen">
+      <remap from="~input" to="/vrep/depthSensor"/>
+  </node>
+</launch>
