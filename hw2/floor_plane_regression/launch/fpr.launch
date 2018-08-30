@@ -1,0 +1,10 @@
+<launch>
+
+  <node pkg="floor_plane_regression" type="floor_plane_regression" name="floor_plane_regression" output="screen">
+      launch-prefix="xterm -e gdb --args"
+      <param name="base_frame" value="/kinect_visionSensor" />
+      <param name="max_range" value="5.0" />
+
+      <remap from="/floor_plane_regression/scans" to="/vrep/depthSensor"/>
+  </node>
+</launch>
