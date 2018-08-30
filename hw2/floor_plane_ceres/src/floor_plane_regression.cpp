@@ -59,8 +59,7 @@ struct PlaneError {
             // Update this value to make it a proper measurement error
             // Check the CERES optimizer web-page for the documentation: 
             // http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/tutorial.html#chapter-tutorial
-            //residuals[0] =T[0].x - x[0]+ T[0].y-y[0] +T[0].z - z[0] ;
-            residuals[0] =T(0.0) - x;
+            residuals[0] =z- w[0]*x+w[1]*y - w[2];
             
             // END OF TODO
             return true;
@@ -117,7 +116,7 @@ class FloorPlaneRegression {
               loss_function = FLAGS_robustify ? new ceres::HuberLoss(1.0) : NULL;
               // TODO START
 
-              ceres::CostFunction *cost_function = new ceres::AutoDiffCostFunction<PlaneError, 1, 1>(new PlaneError);
+              ceres::CostFunction *cost_function = new ceres::AutoDiffCostFunction<PlaneError, 1, 3>(new PlaneError (lastpc_[i].x,lastpc_[i].y , lastpc_[i].z));
 
                 // Use the PlaneError defined above to build an error term for
                 // the ceres optimiser (see documentation link above)
