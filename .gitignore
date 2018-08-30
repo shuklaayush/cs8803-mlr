@@ -48,3 +48,4 @@ CATKIN_IGNORE
 
 # Swap files
 *.swp
+*.swo
