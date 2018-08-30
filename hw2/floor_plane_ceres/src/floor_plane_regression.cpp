@@ -6,11 +6,8 @@
 #include <pcl/point_types.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
-
 #include <Eigen/Core>
 #include <Eigen/Cholesky>
-
-
 #include "ceres/ceres.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
@@ -35,9 +32,7 @@ DEFINE_string(preconditioner, "jacobi", "Options are: "
               "cluster_tridiagonal.");
 
 DEFINE_string(sparse_linear_algebra_library, "suite_sparse",
-              "Options are: suite_sparse and cx_sparse.");
-
-DEFINE_string(ordering, "automatic", "Options are: automatic, user.");
+              "Options are: suite_sparse and cx_sparse.");DEFINE_string(ordering, "automatic", "Options are: automatic, user.");
 
 DEFINE_bool(robustify, false, "Use a robust loss function.");
 DEFINE_double(eta, 1e-2, "Default value for eta. Eta determines the "
@@ -58,13 +53,15 @@ struct PlaneError {
     template <typename T>
         bool operator()(const T* const w,
                 T* residuals) const {
-            // TODO START
+
+          // TODO START
             // The error is the difference between the predicted and a position.
             // Update this value to make it a proper measurement error
             // Check the CERES optimizer web-page for the documentation: 
             // http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/tutorial.html#chapter-tutorial
-            residuals[0] = T(0.0);
-
+            //residuals[0] =T[0].x - x[0]+ T[0].y-y[0] +T[0].z - z[0] ;
+            residuals[0] =T(0.0) - x;
+            
             // END OF TODO
             return true;
         }
@@ -98,31 +95,33 @@ class FloorPlaneRegression {
             // Linear regression:  z = a*x + b*y + c
             ceres::Problem problem;
             size_t n = lastpc_.size();
-            // The parameter of the optimisation will be stored in the
+            // The parameter of ithe optimisation will be stored in the
             // following buffer:
             double X[3] = {0,0,0};
-            for (unsigned int i=0;i<n;i++) {
-                const pcl::PointXYZ & T = temp[i];
-                double d = hypot(T.x,T.y);
-                // In the sensor frame, this point would be inside the camera
-                if (d < 1e-2) {
-                    // Bogus point, ignore
-                    continue;
-                }
-                // Measure the point distance in the base frame
-                const pcl::PointXYZ & P = lastpc_[i];
-                d = hypot(P.x,P.y);
-                if (d>max_range_) {
-                    // too far, ignore
-                    continue;
-                }
-                ceres::LossFunction* loss_function;
-                ceres::CostFunction *cost_function;
-                loss_function = FLAGS_robustify ? new ceres::HuberLoss(1.0) : NULL;
-                // TODO START
+          for (unsigned int i=0;i<n;i++) {
+              const pcl::PointXYZ & T = temp[i];
+              double d = hypot(T.x,T.y);
+              // In the sensor frame, this point would be inside the camera
+              if (d < 1e-2) {
+                  // Bogus point, ignore
+                  continue;
+              }
+              // Measure the point distance in the base frame
+              const pcl::PointXYZ & P = lastpc_[i];
+              d = hypot(P.x,P.y);
+              if (d>max_range_) {
+                  // too far, ignore
+                  continue;
+              }
+              ceres::LossFunction* loss_function;
+              loss_function = FLAGS_robustify ? new ceres::HuberLoss(1.0) : NULL;
+              // TODO START
+
+              ceres::CostFunction *cost_function = new ceres::AutoDiffCostFunction<PlaneError, 1, 1>(new PlaneError);
+
                 // Use the PlaneError defined above to build an error term for
                 // the ceres optimiser (see documentation link above)
-                cost_function = NULL;
+               
                 // END OF TODO
                 // This cost function is then added to the optimisation
                 // problem, with X as a parameter
@@ -132,7 +131,6 @@ class FloorPlaneRegression {
             // Now we've prepared ceres' solver, we can just run it:
             ceres::Solver::Summary summary;
             ceres::Solve(options, &problem, &summary);
-
             // Assuming the result is computed in vector X
             ROS_INFO("Extracted floor plane: z = %.2fx + %.2fy + %.2f",
                     X[0],X[1],X[2]);
