@@ -14,5 +14,6 @@
 - Ubuntu 16.04
 - ROS Kinetic
 
-## Author
-Ayush Shukla
+## Authors
+- Ayush Shukla
+- Bilal Ghader
