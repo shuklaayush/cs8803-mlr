@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Lab2 Report}
+\author{b.ghader }
+\date{September 2018}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+\begin{titlepage}
+	
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+	\center
+ % Center everything on the page
+	%----------------------------------------------------------------------------------------
+	%	LOGO SECTION
+	%----------------------------------------------------------------------------------------
+    \includegraphics[scale = 0.5]{images/gt-logo-gold.png}\\ [1cm]
+	\textsc{\LARGE Georgia Institute of Technology}\\[2cm] % Name of your university/college
+	% Include a department/university logo - this will require the graphicx package
+	%----------------------------------------------------------------------------------------
+	%	HEADING SECTIONS
+	%----------------------------------------------------------------------------------------
+	\textsc{\Large CS 8803 \\ Machine Learning for Robotics}\\[1cm] % Major heading such as course name
+	%----------------------------------------------------------------------------------------
+	%	TITLE SECTION
+	%----------------------------------------------------------------------------------------
+	\HRule \\[1cm]
+	{ \huge \bfseries LAB 2 Report}\\[1cm] % Title of your document
+	\HRule \\[1.5cm]
+	%----------------------------------------------------------------------------------------
+	%	AUTHOR SECTION
+	%----------------------------------------------------------------------------------------
+	 %If you don't want a supervisor, uncomment the two lines below and remove the section above
+	\Large \emph{Author:}\\
+	\begin{tabular}{c c}
+	  	Bilal \textsc{Ghader}% Your name   &  
+	     & 
+	     	Ayush \textsc{Shukla} % Your name
+	\end{tabular}
+	\\[2cm]
+
+
+	%----------------------------------------------------------------------------------------
+	%	DATE SECTION
+	%----------------------------------------------------------------------------------------
+	{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+	%----------------------------------------------------------------------------------------
+	\vfill % Fill the rest of the page with whitespace
+	\end{titlepage}
+
+
+\section{Computation Time and Load}
+The typical values of computation time are significantly different for the two solvers. In order to be able to visualize this differences, we modified the code adding a snippet to print out the time needed for each solver. To begin with, we notice that the linear solver has a $0.003 s$ average time while the non linear ceres solver has an average time of $0.09 $ to ${0.13}s$. Thus, in  general the ceres solver is expected to be 10 to 100 times slower than the linear implementation. 
+\\ \noindent To be noted, these values are highly dependent on the environment and notably on the number of points the solver is processing during the iteration. The linear solver showcases less variation than the non-linear one which showcased around $50\%$ variation in the time required for one iteration.
+\section{Precision}
+Both solvers have the same precision when it comes to the final solution. This is due to the fact that both solvers use the same cost function. However, the ceres non-linear solver tends to converge slower than the linear implementation (refer to section 1). 
+\\ \noindent Both approaches are sensitive to the environment. When no obstacles are in front of the robot, the result equation of the plan is $z = -0.01 x + 0.0 y + 0.0$. However, when an obstacle is detected the precision of the result decreases, the result  equation reaches $z = -0.18x + 0.02y - 0.09$. This is due to the bias introduced by the vertical points of the wall. 
+\section{Robustify}
+Even with --robustify argument, we don't observe any noticeable difference in the output.
+\section{Solution}
+\begin{itemize}
+    \item One way to solve the problem we have is to filter out noisy points based on a threshold on the z value (maybe only take points which are within a particular threshold to the minimum observed z value).
+    \item Another heuristic is to ignore the obstacles in calculations. In fact, obstacles can be thought of as points in the point cloud with exactly the same $(x,y)$ values, but different $z$ values. Thus we can filter for these values to keep only one of them.
+\end{itemize}
+\end{document}
