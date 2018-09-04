@@ -2,4 +2,6 @@
   <node pkg="joy" type="joy_node" name="joy_node"/>
 
   <node pkg="turtlejoy" name="turtlejoy_node" type="roscpp_node"/>
+
+  <node pkg="rviz" name="rviz" type="rviz" />
 </launch>
