@@ -34,7 +34,7 @@ DEFINE_string(preconditioner, "jacobi", "Options are: "
 DEFINE_string(sparse_linear_algebra_library, "suite_sparse",
               "Options are: suite_sparse and cx_sparse.");DEFINE_string(ordering, "automatic", "Options are: automatic, user.");
 
-DEFINE_bool(robustify, false, "Use a robust loss function.");
+DEFINE_bool(robustify, true, "Use a robust loss function.");
 DEFINE_double(eta, 1e-2, "Default value for eta. Eta determines the "
              "accuracy of each linear solve of the truncated newton step. "
              "Changing this parameter can affect solve performance.");
@@ -129,7 +129,10 @@ class FloorPlaneRegression {
 
             // Now we've prepared ceres' solver, we can just run it:
             ceres::Solver::Summary summary;
+            ros::Time t = ros::Time::now();
             ceres::Solve(options, &problem, &summary);
+            ros::Duration diff = ros::Time::now() - t;
+            ROS_INFO("#Points: %lu, Time: %.4fs", n, diff.toNSec() / 1.0e9);
             // Assuming the result is computed in vector X
             ROS_INFO("Extracted floor plane: z = %.2fx + %.2fy + %.2f",
                     X[0],X[1],X[2]);
@@ -167,8 +170,8 @@ class FloorPlaneRegression {
             m.scale.y = 1.0;
             m.scale.z = 0.01;
             m.color.a = 0.5;
-            m.color.r = 1.0;
-            m.color.g = 0.0;
+            m.color.r = 0.0;
+            m.color.g = 1.0;
             m.color.b = 1.0;
 
             // And publish it
