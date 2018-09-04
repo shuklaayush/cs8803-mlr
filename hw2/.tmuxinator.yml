@@ -15,7 +15,7 @@ windows:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
           - rostopic list
-        - rosrun joy joy_node
+        - roslaunch turtlejoy turtlejoy.launch
         - 
   - vim:
       vim -O floor_plane_ceres/src/floor_plane_regression.cpp floor_plane_regression/src/floor_plane_regression.cpp
