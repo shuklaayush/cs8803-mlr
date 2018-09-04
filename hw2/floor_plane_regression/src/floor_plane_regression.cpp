@@ -86,8 +86,11 @@ class FloorPlaneRegression {
 
                 b(i,0) = z;
             }
+            ros::Time t = ros::Time::now();
             // Eigen operation on matrices are very natural:
             Eigen::MatrixXf X = A.colPivHouseholderQr().solve(b);
+            ros::Duration diff = ros::Time::now() - t;
+            ROS_INFO("#Points: %d, Time: %.4fs", n, diff.toNSec() / 1.0e9);
             // Eigen::MatrixXf X = A.transpose() * B;
             // Details on linear solver can be found on 
             // http://eigen.tuxfamily.org/dox-devel/group__TutorialLinearAlgebra.html
