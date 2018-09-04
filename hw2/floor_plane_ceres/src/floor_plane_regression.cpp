@@ -59,7 +59,7 @@ struct PlaneError {
             // Update this value to make it a proper measurement error
             // Check the CERES optimizer web-page for the documentation: 
             // http://homes.cs.washington.edu/~sagarwal/ceres-solver/stable/tutorial.html#chapter-tutorial
-            residuals[0] =z- w[0]*x+w[1]*y - w[2];
+            residuals[0] = z- w[0]*x - w[1]*y - w[2];
             
             // END OF TODO
             return true;
