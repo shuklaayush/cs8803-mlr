@@ -5,6 +5,6 @@
       <param name="base_frame" value="/bubbleRob" />
       <param name="max_range" value="3.0" />
 
-      <remap from="/floor_plane_ceres/scans" to="/vrep/depthSensor"/>
+      <remap from="/floor_plane_ceres/scans" to="/pointcloud_noisify/output"/>
   </node>
 </launch>
