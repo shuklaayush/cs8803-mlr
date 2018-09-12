@@ -1,17 +1,25 @@
 <launch>
-    <node pkg="model_prediction" type="generator.py" name="generator" output="screen" />
+    <!--node pkg="model_prediction" type="generator.py" name="generator" output="screen" /-->
+
+    <node pkg="joy" type="joy_node" name="joy_node">
+      <param name="autorepeat_rate" value="30" />
+    </node>
+
+    <node pkg="turtlejoy" name="turtlejoy_node" type="roscpp_node"/>
 
     <node pkg="model_prediction" type="model_prediction.py" name="predictor" output="screen" >
         <param name="trigger" value="command"/>
-        <param name="command_type" value="std_msgs/Float64"/>
-        <param name="command_field" value="data"/>
-        <param name="command_coef_csv" value="0.25,0.5,0.25"/>
-        <param name="state_type" value="std_msgs/Float64"/>
-        <param name="state_field" value="data"/>
-        <param name="state_coef_csv" value="0"/>
+        <param name="command_type" value="geometry_msgs/Twist"/>
+        <param name="command_field" value="linear.x"/>
+        <!--param name="command_coef_csv" value="2.033, -1.277, 0.5343, -0.4706, 0.3773, -0.3598, 0.1588, "/-->
+        <param name="command_coef_csv" value="1.86, -0.7342, -0.1659, 0.0334"/>
+        <param name="state_type" value="geometry_msgs/TwistStamped"/>
+        <param name="state_field" value="twist.linear.x"/>
+        <!--param name="state_coef_csv" value="0.0, 0.001995, -0.05382, 0.05646"/-->
+        <param name="state_coef_csv" value="0.0, 0.0, 0.0, 0.005211, -0.009644, -0.01322, 0.024"/>
 
-        <remap from="/predictor/command" to="/command"/>
-        <remap from="/predictor/state" to="/state"/>
+        <remap from="/predictor/command" to="/vrep/drone/cmd_vel"/>
+        <remap from="/predictor/state" to="/vrep/drone/out_vel"/>
     </node>
 
 </launch>
