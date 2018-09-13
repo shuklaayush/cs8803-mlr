@@ -63,20 +63,41 @@ class FloorPlaneHough {
             // BEGIN TODO
             // Finding planes: z = a*x + b*y + c using the hough transform
             // Remember to use the a_min,a_max,n_a variables (resp. b, c).
+            double res_a = (a_max - a_min) / (n_a - 1);
+            double res_b = (b_max - b_min) / (n_b - 1);
+            double res_c = (c_max - c_min) / (n_c - 1);
             n = pidx.size();
             ROS_INFO("%d useful points out of %d",(int)n,(int)temp.size());
             // fill the accumulator with zeros
+            double X[3] = {0,0,0};
             accumulator = 0;
+            int max_votes = 0;
             for (unsigned int i=0;i<n;i++) {
                 double x = lastpc_[pidx[i]].x;
                 double y = lastpc_[pidx[i]].y;
                 double z = lastpc_[pidx[i]].z;
                 // Update the accumulator based on current point here
                 // individual cells in the accumulator can be accessed as follows
-                accumulator(0,0,0) = 1;
+                for (int a_ix =0; a_ix < n_a; ++a_ix) {
+                  double a = a_min + a_ix * res_a;
+                  for (int b_ix = 0; b_ix < n_b; ++b_ix) {
+                    double b = b_min + b_ix * res_b;
+                    double c = z - a*x - b*y;
+
+                    int c_ix = (c - c_min) / res_c;
+
+                    ++accumulator(a_ix,b_ix,c_ix);
+                    if (max_votes < accumulator(a_ix, b_ix, c_ix)) {
+                        max_votes = accumulator(a_ix, b_ix, c_ix);
+                        double c_t = c_min + c_ix * res_c;
+                        X[0] = a;
+                        X[1] = b;
+                        X[2] = c_t;
+                    }
+                  }
+                }
             }
 
-            double X[3] = {0,0,0};
             // Use the accumulator to find the best plane parameters and store
             // them in X (this will be used for display later)
             // X = {a,b,c}

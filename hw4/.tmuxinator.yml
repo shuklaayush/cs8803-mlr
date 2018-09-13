@@ -1,0 +1,31 @@
+name: hw4
+root: .
+startup_window: ros
+windows:
+  - ros:
+      layout: b2a4,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,0,50x28,52,0,3},102x28,0,29,4],102x57,103,0[102x28,103,0,5,102x28,103,29,7]}
+      panes:
+        - roscore
+        - vrep:
+          - until rostopic list ; do sleep 1; done
+          - clear
+          - vrep -s $VREP_SCENES/rosControlKinect3d.ttt
+        - rostopic:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - rostopic list
+        - roslaunch:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - roslaunch floor_plane_hough fpr.launch
+  - vim:
+      vim -O floor_plane_hough/src/floor_plane_hough.cpp floor_plane_hough/src/floor_plane_hough.cpp -c 'cd ~/ros_ws/build'
+  - build:
+      layout: even-horizontal
+      panes:
+        - build:
+          - cd ~/ros_ws/
+          - clear
+        - git:
+          - cd ..
+          - clear
