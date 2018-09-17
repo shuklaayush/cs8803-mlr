@@ -17,9 +17,9 @@ windows:
         - roslaunch:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - roslaunch floor_plane_hough fpr.launch
+          - roslaunch floor_plane_ransac fpr.launch
   - vim:
-      vim -O floor_plane_hough/src/floor_plane_hough.cpp floor_plane_hough/src/floor_plane_hough.cpp -c 'cd ~/ros_ws/build'
+      vim -O floor_plane_hough/src/floor_plane_hough.cpp floor_plane_ransac/src/floor_plane_ransac.cpp -c 'cd ~/ros_ws/build'
   - build:
       layout: even-horizontal
       panes:

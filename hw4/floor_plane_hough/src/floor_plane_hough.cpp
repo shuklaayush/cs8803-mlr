@@ -78,7 +78,7 @@ class FloorPlaneHough {
                 double z = lastpc_[pidx[i]].z;
                 // Update the accumulator based on current point here
                 // individual cells in the accumulator can be accessed as follows
-                for (int a_ix =0; a_ix < n_a; ++a_ix) {
+                for (int a_ix = 0; a_ix < n_a; ++a_ix) {
                   double a = a_min + a_ix * res_a;
                   for (int b_ix = 0; b_ix < n_b; ++b_ix) {
                     double b = b_min + b_ix * res_b;

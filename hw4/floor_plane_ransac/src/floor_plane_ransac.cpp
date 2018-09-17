@@ -63,20 +63,50 @@ class FloorPlaneRansac {
             size_t best = 0;
             double X[3] = {0,0,0};
             ROS_INFO("%d useful points out of %d",(int)n,(int)temp.size());
-            for (unsigned int i=0;i<(unsigned)n_samples;i++) {
-                // Implement RANSAC here. Useful commands:
-                // Select a random number in in [0,i-1]
-                size_t j = std::min((rand() / (double)RAND_MAX) * i,(double)i-1);
+            if (n_samples < n) {
+                for (unsigned int i=0;i<(unsigned)n_samples;i++) {
+                    // Implement RANSAC here. Useful commands:
+                    // Select a random number in in [0,i-1]
+                    constexpr int n_points = 3;
+                    Eigen::Vector3f points[n_points];
+                    for (int j = 0; j < n_points; ++j) {
+                        int ix = std::min((rand() / (double)RAND_MAX) * n,(double)n-1);
+                        double x = lastpc_[pidx[ix]].x;
+                        double y = lastpc_[pidx[ix]].y;
+                        double z = lastpc_[pidx[ix]].z;
+                        points[j] = Eigen::Vector3f(x, y, z);
+                        points[j] /= points[j].norm();
+                    }
+                    Eigen::Vector3f Q = points[1] - points[0];
+                    Eigen::Vector3f P = points[2] - points[0];
+                    Eigen::Vector3f N = Q.cross(P);
+                    N /= N.norm();
+                    unsigned int vote = 0;
+                    for (unsigned int j=0;j<n;j++) {
+                        double x = lastpc_[pidx[j]].x;
+                        double y = lastpc_[pidx[j]].y;
+                        double z = lastpc_[pidx[j]].z;
+                        Eigen::Vector3f pt(x, y, z);
+                        Eigen::Vector3f V = pt - points[0];
+                        double e = V.dot(N);
+                        if (e < tolerance) {
+                            ++vote;
+                        }
+                    }
+                    if (vote > best) {
+                        X[0] = -N[0] / N[2];
+                        X[1] = -N[1] / N[2];
+                        X[2] = points[0][2] - X[0]*points[0][0] - X[1]*points[0][1];
+                        best = vote;
+                    }
+                }
+
+                //
                 // Create a 3D point:
                 // Eigen::Vector3f P; P << x,y,z;
-                Eigen::Vector3f P; P << lastpc_[pidx[0]].x, lastpc_[pidx[0]].y, lastpc_[pidx[0]].z; 
                 // Dot product
-                double x = P.dot(P);
                 // Cross product
-                Eigen::Vector3f Q = P.cross(P); 
                 // Vector norm
-                double norm = P.norm();
-
             }
             // At the end, make sure to store the best plane estimate in X
             // X = {a,b,c}. This will be used for display

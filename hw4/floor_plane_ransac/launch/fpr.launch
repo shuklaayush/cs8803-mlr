@@ -10,7 +10,7 @@
       <param name="base_frame" value="/bubbleRob" />
       <param name="max_range" value="2.0" />
       <param name="n_samples" value="1000" />
-      <param name="tolerance" value="1.0" />
+      <param name="tolerance" value="0.05" />
 
       <remap from="/floor_plane_ransac/scans" to="/vrep/depthSensor"/>
   </node>
