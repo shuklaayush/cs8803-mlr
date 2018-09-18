@@ -63,17 +63,17 @@ class FloorPlaneRansac {
             size_t best = 0;
             double X[3] = {0,0,0};
             ROS_INFO("%d useful points out of %d",(int)n,(int)temp.size());
-            if (n_samples < n) {
+            if (n_samples < static_cast<int>(n)) {
                 for (unsigned int i=0;i<(unsigned)n_samples;i++) {
                     // Implement RANSAC here. Useful commands:
                     // Select a random number in in [0,i-1]
                     constexpr int n_points = 3;
                     Eigen::Vector3f points[n_points];
+                    std::random_shuffle(pidx.begin(), pidx.end());
                     for (int j = 0; j < n_points; ++j) {
-                        int ix = std::min((rand() / (double)RAND_MAX) * n,(double)n-1);
-                        double x = lastpc_[pidx[ix]].x;
-                        double y = lastpc_[pidx[ix]].y;
-                        double z = lastpc_[pidx[ix]].z;
+                        double x = lastpc_[pidx[j]].x;
+                        double y = lastpc_[pidx[j]].y;
+                        double z = lastpc_[pidx[j]].z;
                         points[j] = Eigen::Vector3f(x, y, z);
                         points[j] /= points[j].norm();
                     }
@@ -81,6 +81,7 @@ class FloorPlaneRansac {
                     Eigen::Vector3f P = points[2] - points[0];
                     Eigen::Vector3f N = Q.cross(P);
                     N /= N.norm();
+                    // std::cout << "Vector: \n" << N << '\n';
                     unsigned int vote = 0;
                     for (unsigned int j=0;j<n;j++) {
                         double x = lastpc_[pidx[j]].x;
@@ -88,7 +89,8 @@ class FloorPlaneRansac {
                         double z = lastpc_[pidx[j]].z;
                         Eigen::Vector3f pt(x, y, z);
                         Eigen::Vector3f V = pt - points[0];
-                        double e = V.dot(N);
+                        V /= V.norm();
+                        double e = fabs(V.dot(N));
                         if (e < tolerance) {
                             ++vote;
                         }
@@ -141,8 +143,8 @@ class FloorPlaneRansac {
             m.pose.position.y = O(1);
             m.pose.position.z = O(2);
             tf::quaternionTFToMsg(Q,m.pose.orientation);
-            m.scale.x = 1.0;
-            m.scale.y = 1.0;
+            m.scale.x = 2.0;
+            m.scale.y = 2.0;
             m.scale.z = 0.01;
             m.color.a = 0.5;
             m.color.r = 1.0;
