@@ -84,7 +84,7 @@ class FloorPlaneHough {
                     double b = b_min + b_ix * res_b;
                     double c = z - a*x - b*y;
 
-                    int c_ix = (c - c_min) / res_c;
+                    int c_ix = round((c - c_min) / res_c);
 
                     ++accumulator(a_ix,b_ix,c_ix);
                     if (max_votes < accumulator(a_ix, b_ix, c_ix)) {
