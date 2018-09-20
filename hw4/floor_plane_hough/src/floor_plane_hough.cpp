@@ -132,12 +132,12 @@ class FloorPlaneHough {
             m.pose.position.y = O(1);
             m.pose.position.z = O(2);
             tf::quaternionTFToMsg(Q,m.pose.orientation);
-            m.scale.x = 1.0;
-            m.scale.y = 1.0;
+            m.scale.x = 2.0;
+            m.scale.y = 2.0;
             m.scale.z = 0.01;
             m.color.a = 0.5;
-            m.color.r = 1.0;
-            m.color.g = 0.0;
+            m.color.r = 0.0;
+            m.color.g = 1.0;
             m.color.b = 1.0;
 
             marker_pub_.publish(m);

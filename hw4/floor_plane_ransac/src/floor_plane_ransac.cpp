@@ -75,7 +75,6 @@ class FloorPlaneRansac {
                         double y = lastpc_[pidx[j]].y;
                         double z = lastpc_[pidx[j]].z;
                         points[j] = Eigen::Vector3f(x, y, z);
-                        points[j] /= points[j].norm();
                     }
                     Eigen::Vector3f Q = points[1] - points[0];
                     Eigen::Vector3f P = points[2] - points[0];
