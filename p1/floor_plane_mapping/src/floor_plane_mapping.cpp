@@ -22,6 +22,7 @@ using Matrix = Eigen::MatrixXf;
 using Vector = Eigen::VectorXf;
 using cv::Mat_;
 using nav_msgs::OccupancyGrid;
+using std::abs;
 
 constexpr auto DEFAULT_GRID_VAL = 100;
 }  // namespace
@@ -30,14 +31,15 @@ Vector find_normal(const vector<Point>& points) {
     auto n = points.size();
 
     Matrix A(n, 3);
-    Vector b = Vector::Ones(n);
+    Vector b(n);
 
+    // Linear regression: z = a*x + b*y + c
     for (unsigned int i = 0; i < n; ++i) {
         A(i, 0) = points[i].x;
         A(i, 1) = points[i].y;
-        A(i, 2) = points[i].z;
+        A(i, 2) = 1;
 
-        b(i, 0) = 1;
+        b(i, 0) = points[i].z;
     }
     Vector X = A.colPivHouseholderQr().solve(b);
     return X;  // TODO: Check move semantics
@@ -50,7 +52,7 @@ Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
         auto x = i / grid.info.width;
         auto y = i % grid.info.width;
         if (grid.data[i] != -1) {
-            image(y, x) = grid.data[i];
+            image(y, x) = 2 * (grid.data[i] + 1) - 1;
         }
     }
     // cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
@@ -91,6 +93,8 @@ protected:  // ROS Callbacks
 
         unsigned int n = temp.size();
         // TODO: Iterate through points and store them in grid matrix
+        vector<vector<Point>> gridpoints;
+        gridpoints.reserve(width_ * height_);
         for (unsigned int i = 0; i < n; i++) {
             float x = temp[i].x;
             float y = temp[i].y;
@@ -103,19 +107,35 @@ protected:  // ROS Callbacks
             // Measure the point distance in the base frame
             x = lastpcl_[i].x;
             y = lastpcl_[i].y;
+            float z = lastpcl_[i].z;
             d = hypot(x, y);
             if (d > max_range_) {
                 // too far, ignore
                 continue;
             }
-            // If we reach this stage, we have an acceptable point, so
-            // let's store it
+            if (0 <= x && x < width_ * resolution_ && 0 <= y &&
+                y < height_ * resolution_) {
+                Point pt(x, y, z);
+                // If we reach this stage, we have an acceptable point, so
+                // let's store it
+                int x_grid = x / resolution_;
+                int y_grid = y / resolution_;
+                int ix = y_grid * width_ + x_grid;
+                std::cout << ix << std::endl;
+                gridpoints[ix].push_back(pt);
+            }
+        }
+        // TODO: For each gridcell, calculate normal and modify occupancy grid
+        for (int i = 0; i < gridpoints.size(); ++i) {
+            auto N = find_normal(gridpoints[i]);
+            auto a = N[0];
+            auto b = N[1];
+            grid_.data[i] =
+                (abs(1 - (1 / (a * a + b * b + 1))) < 0.05) ? 127 : 0;
         }
         auto image = to_mat(grid_);
-        cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
+        cv_bridge::CvImage ros_image(std_msgs::Header(), "mono8", image);
         gridimage_pub_.publish(ros_image.toImageMsg());
-
-        // TODO: For each gridcell, calculate normal and modify occupancy grid
     }
 
 public:
@@ -137,8 +157,8 @@ public:
         ros::Duration(0.5).sleep();
 
         // TODO: Change to param
-        scan_sub_ =
-            nh_.subscribe("/vrep/depthSensor", 1, &FloorPlaneMapping::pcl_callback, this);
+        scan_sub_ = nh_.subscribe("/vrep/depthSensor", 1,
+                                  &FloorPlaneMapping::pcl_callback, this);
         grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("grid", 1);
         gridimage_pub_ = it_.advertise("gridimage", 1);
 
