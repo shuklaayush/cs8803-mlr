@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 
 #include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
@@ -19,6 +20,10 @@ using std::vector;
 using Point = pcl::PointXYZ;
 using Matrix = Eigen::MatrixXf;
 using Vector = Eigen::VectorXf;
+using cv::Mat_;
+using nav_msgs::OccupancyGrid;
+
+constexpr auto DEFAULT_GRID_VAL = 100;
 }  // namespace
 
 Vector find_normal(const vector<Point>& points) {
@@ -35,23 +40,42 @@ Vector find_normal(const vector<Point>& points) {
         b(i, 0) = 1;
     }
     Vector X = A.colPivHouseholderQr().solve(b);
-    return X; // TODO: Check move semantics
+    return X;  // TODO: Check move semantics
+}
+
+Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
+    Mat_<uint8_t> image(grid.info.height, grid.info.width, DEFAULT_GRID_VAL);
+    // image = DEFAULT_GRID_VAL;
+    for (unsigned int i; i < grid.data.size(); ++i) {
+        auto x = i / grid.info.width;
+        auto y = i % grid.info.width;
+        if (grid.data[i] != -1) {
+            image(y, x) = grid.data[i];
+        }
+    }
+    // cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
+    return image;
 }
 
 class FloorPlaneMapping {
 protected:
+    ros::NodeHandle nh_;
+    image_transport::ImageTransport it_;
+
     ros::Subscriber scan_sub_;
-    ros::Publisher marker_pub_;
-    ros::Publisher gridmap_pub_;
-    ros::Publisher imagemap_pub_;
+
+    ros::Publisher grid_pub_;
+    image_transport::Publisher gridimage_pub_;
+
     tf::TransformListener listener_;
 
-    ros::NodeHandle nh_;
     std::string base_frame_;
+    int width_;
+    int height_;
+    double resolution_;
     double max_range_;
 
-    // visualization_msgs::MarkerArray marker_array_msg;
-    nav_msgs::OccupancyGrid gridmap;
+    nav_msgs::OccupancyGrid grid_;
     pcl::PointCloud<pcl::PointXYZ> lastpcl_;
 
 protected:  // ROS Callbacks
@@ -87,29 +111,53 @@ protected:  // ROS Callbacks
             // If we reach this stage, we have an acceptable point, so
             // let's store it
         }
+        auto image = to_mat(grid_);
+        cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
+        gridimage_pub_.publish(ros_image.toImageMsg());
+
         // TODO: For each gridcell, calculate normal and modify occupancy grid
     }
 
 public:
-    FloorPlaneMapping() : nh_("~") {
-        // TODO START
+    FloorPlaneMapping() : nh_("~"), it_(nh_) {
         // The parameter below described the frame in which the point cloud
         // must be projected to be estimated. You need to understand TF
         // enough to find the correct value to update in the launch file
-        nh_.param("base_frame", base_frame_, std::string("/body"));
+        nh_.param("base_frame", base_frame_, std::string("/bubbleRob"));
         // This parameter defines the maximum range at which we want to
         // consider points. Experiment with the value in the launch file to
         // find something relevant.
         nh_.param("max_range", max_range_, 5.0);
-        // END OF TODO
+
+        nh_.param("width", width_, 100);
+        nh_.param("height", height_, 100);
+        nh_.param("resolution", resolution_, 0.5);
 
         // Make sure TF is ready
         ros::Duration(0.5).sleep();
 
-        // Subscribe to the point cloud and prepare the marker publisher
+        // TODO: Change to param
         scan_sub_ =
-            nh_.subscribe("scans", 1, &FloorPlaneMapping::pcl_callback, this);
-        gridmap_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("gridmap", 1);
+            nh_.subscribe("/vrep/depthSensor", 1, &FloorPlaneMapping::pcl_callback, this);
+        grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("grid", 1);
+        gridimage_pub_ = it_.advertise("gridimage", 1);
+
+        grid_.header.frame_id = base_frame_;
+
+        grid_.info.width = width_;
+        grid_.info.height = height_;
+        grid_.info.resolution = resolution_;
+
+        grid_.info.origin.position.x = 0;
+        grid_.info.origin.position.y = 0;
+        grid_.info.origin.position.z = 0;
+        grid_.info.origin.orientation.w = 1;
+
+        grid_.data.resize(width_ * height_);
+
+        for (auto& it : grid_.data) {
+            it = -1;
+        }
     }
 };
 
