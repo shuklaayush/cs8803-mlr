@@ -12,24 +12,30 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <opencv2/core.hpp>
+#include <vector>
 
-plane find_plane(const vector<>& points) {
-    for (unsigned int i = 0; i < n; i++) {
-        // Assign x,y,z to the coordinates of the point we are
-        // considering.
-        double x = lastpcl_[pidx[i]].x;
-        double y = lastpcl_[pidx[i]].y;
-        double z = lastpcl_[pidx[i]].z;
+namespace {
+using std::vector;
+using Point = pcl::PointXYZ;
+using Matrix = Eigen::MatrixXf;
+using Vector = Eigen::VectorXf;
+}  // namespace
 
-        // Example of initialisation of the matrices (wrong)
-        A(i, 0) = x;
-        A(i, 1) = y;
-        A(i, 2) = 1;
+Vector find_normal(const vector<Point>& points) {
+    auto n = points.size();
 
-        b(i, 0) = z;
+    Matrix A(n, 3);
+    Vector b = Vector::Ones(n);
+
+    for (unsigned int i = 0; i < n; ++i) {
+        A(i, 0) = points[i].x;
+        A(i, 1) = points[i].y;
+        A(i, 2) = points[i].z;
+
+        b(i, 0) = 1;
     }
-    ros::Time t = ros::Time::now();
-    // Eigen operation on matrices are very natural:
+    Vector X = A.colPivHouseholderQr().solve(b);
+    return X; // TODO: Check move semantics
 }
 
 class FloorPlaneMapping {
@@ -60,7 +66,7 @@ protected:  // ROS Callbacks
                                      msg->header.frame_id, lastpcl_, listener_);
 
         unsigned int n = temp.size();
-        // First count the useful points
+        // TODO: Iterate through points and store them in grid matrix
         for (unsigned int i = 0; i < n; i++) {
             float x = temp[i].x;
             float y = temp[i].y;
@@ -80,32 +86,8 @@ protected:  // ROS Callbacks
             }
             // If we reach this stage, we have an acceptable point, so
             // let's store it
-            pidx.push_back(i);
         }
-
-        // TODO START
-        //
-        // Linear regression: z = a*x + b*y + c
-        // Update the code below to use Eigen to find the parameters of the
-        // linear regression above.
-        //
-        // n is the number of useful point in the point cloud
-        n = pidx.size();
-        // Eigen is a matrix library. The line below create a 3x3 matrix A,
-        // and a 3x1 vector B
-        Eigen::MatrixXf A(n, 3);
-        Eigen::MatrixXf b(n, 1);
-        Eigen::MatrixXf X = A.colPivHouseholderQr().solve(b);
-
-        ros::Duration diff = ros::Time::now() - t;
-        ROS_INFO("#Points: %d, Time: %.4fs", n, diff.toNSec() / 1.0e9);
-        // Eigen::MatrixXf X = A.transpose() * B;
-        // Details on linear solver can be found on
-        // http://eigen.tuxfamily.org/dox-devel/group__TutorialLinearAlgebra.html
-
-        // Assuming the result is computed in vector X
-        ROS_INFO("Extracted floor plane: z = %.2fx + %.2fy + %.2f", X(0), X(1),
-                 X(2));
+        // TODO: For each gridcell, calculate normal and modify occupancy grid
     }
 
 public:
