@@ -115,8 +115,8 @@ class FloorPlaneHough {
             // END OF TODO
             //Begin TODO modification to support publishing multiple markers
             int number_of_makers = Markers.size(); 
-            visualization_msgs::Marker* M;
-            M = new visualization_msgs::Marker[number_of_makers] ; 
+            visualization_msgs::MarkerArray M;
+            // M = new visualization_msgs::Marker[number_of_makers] ; 
             for (int it = 0; it<number_of_makers;it++)
         {
             X  = Markers[number_of_makers] ; 
