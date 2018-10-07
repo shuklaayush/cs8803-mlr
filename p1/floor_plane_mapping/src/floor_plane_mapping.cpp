@@ -13,6 +13,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
 #include <vector>
 
 namespace {
@@ -31,13 +32,14 @@ constexpr auto GRID_MAX = 100;
 Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
     Mat_<uint8_t> image(grid.info.height, grid.info.width, GRID_IMAGE_DEFAULT);
     for (unsigned int i; i < grid.data.size(); ++i) {
-        auto x = i / grid.info.width;
-        auto y = i % grid.info.width;
+        auto x = i % grid.info.width;
+        auto y = i / grid.info.width;
         if (grid.data[i] >= 0) {
             image(y, x) = (GRID_MAX - grid.data[i]) * 255 / 100;
         }
     }
     // cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
+    cv::imshow("image", image);
     return image;
 }
 
@@ -54,7 +56,7 @@ protected:
     tf::TransformListener listener_;
 
     std::string map_frame_;
-      std::string base_frame_;
+    std::string base_frame_;
     int width_;
     int height_;
     double resolution_;
@@ -62,6 +64,7 @@ protected:
 
     nav_msgs::OccupancyGrid grid_;
     pcl::PointCloud<pcl::PointXYZ> lastpcl_;
+    pcl::PointCloud<pcl::PointXYZ> pcl_world_;
 
 protected:  // ROS Callbacks
     Vector find_normal(const vector<unsigned int>& points) {
@@ -73,11 +76,11 @@ protected:  // ROS Callbacks
         // Linear regression: z = a*x + b*y + c
         for (unsigned int i = 0; i < n; ++i) {
             auto ix = points[i];
-            A(i, 0) = lastpcl_[ix].x;
-            A(i, 1) = lastpcl_[ix].y;
+            A(i, 0) = pcl_world_[ix].x;
+            A(i, 1) = pcl_world_[ix].y;
             A(i, 2) = 1;
 
-            b(i, 0) = lastpcl_[ix].z;
+            b(i, 0) = pcl_world_[ix].z;
         }
         Vector X = A.colPivHouseholderQr().solve(b);
         return X;  // TODO: Check move semantics
@@ -92,6 +95,11 @@ protected:  // ROS Callbacks
                                    msg->header.stamp, ros::Duration(1.0));
         pcl_ros::transformPointCloud(base_frame_, msg->header.stamp, temp,
                                      msg->header.frame_id, lastpcl_, listener_);
+
+        listener_.waitForTransform(map_frame_, msg->header.frame_id,
+                                   msg->header.stamp, ros::Duration(1.0));
+        pcl_ros::transformPointCloud(map_frame_, msg->header.stamp, temp,
+                                     msg->header.frame_id, pcl_world_, listener_);
 
         unsigned int n = temp.size();
         // TODO: Iterate through points and store them in grid matrix
@@ -114,6 +122,10 @@ protected:  // ROS Callbacks
                 // too far, ignore
                 continue;
             }
+            float x0 = grid_.info.origin.position.x;
+            float y0 = grid_.info.origin.position.y;
+            x = pcl_world_[i].x - x0;
+            y = pcl_world_[i].y - y0;
             if (0 <= x && x < width_ * resolution_ && 0 <= y &&
                 y < height_ * resolution_) {
                 // If we reach this stage, we have an acceptable point, so
@@ -175,7 +187,7 @@ public:
         grid_.info.resolution = resolution_;
 
         grid_.info.origin.position.x = -(resolution_ * width_) / 2;
-        grid_.info.origin.position.y = (resolution_ * height_) / 2;
+        grid_.info.origin.position.y = -(resolution_ * height_) / 2;
         grid_.info.origin.position.z = 0;
         grid_.info.origin.orientation.w = 1;
 
