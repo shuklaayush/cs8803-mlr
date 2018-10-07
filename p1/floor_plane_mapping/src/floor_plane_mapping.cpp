@@ -29,20 +29,6 @@ constexpr auto GRID_IMAGE_DEFAULT = 50;
 constexpr auto GRID_MAX = 100;
 }  // namespace
 
-Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
-    Mat_<uint8_t> image(grid.info.height, grid.info.width, GRID_IMAGE_DEFAULT);
-    for (unsigned int i; i < grid.data.size(); ++i) {
-        auto x = i % grid.info.width;
-        auto y = i / grid.info.width;
-        if (grid.data[i] >= 0) {
-            image(y, x) = (GRID_MAX - grid.data[i]) * 255 / 100;
-        }
-    }
-    // cv_bridge::CvImage ros_image(std_msgs::Header(),"mono8",image);
-    cv::imshow("image", image);
-    return image;
-}
-
 class FloorPlaneMapping {
 protected:
     ros::NodeHandle nh_;
@@ -67,6 +53,18 @@ protected:
     pcl::PointCloud<pcl::PointXYZ> pcl_world_;
 
 protected:  // ROS Callbacks
+    Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
+        Mat_<uint8_t> image(grid.info.height, grid.info.width, GRID_IMAGE_DEFAULT);
+            for (unsigned int i = 0; i < grid.data.size(); ++i) {
+                auto x = i % grid.info.width;
+            auto y = grid.info.height - i / grid.info.width - 1;
+            if (grid.data[i] >= 0) {
+                image(y, x) = (GRID_MAX - grid.data[i]) * 255 / 100;
+            }
+        }
+        return image; // Check Move semantics
+    }
+
     Vector find_normal(const vector<unsigned int>& points) {
         auto n = points.size();
 
@@ -116,7 +114,6 @@ protected:  // ROS Callbacks
             // Measure the point distance in the base frame
             x = lastpcl_[i].x;
             y = lastpcl_[i].y;
-            float z = lastpcl_[i].z;
             d = hypot(x, y);
             if (d > max_range_) {
                 // too far, ignore
@@ -136,20 +133,15 @@ protected:  // ROS Callbacks
                 gridpoints[ix].push_back(i);
             }
         }
-        // TODO: For each gridcell, calculate normal and modify occupancy grid
-        for (int i = 0; i < gridpoints.size(); ++i) {
-            auto N = find_normal(gridpoints[i]);
-            auto a = N[0];
-            auto b = N[1];
-            auto error = abs(1 - (1 / (a * a + b * b + 1)));
-            grid_.data[i] = (error < 0.5) ? 0 : GRID_MAX;
+        for (unsigned int i = 0; i < gridpoints.size(); ++i) {
+            if (gridpoints[i].size() > 0) {
+                auto N = find_normal(gridpoints[i]);
+                auto a = N[0];
+                auto b = N[1];
+                auto error = abs(1 - (1 / (a * a + b * b + 1)));
+                grid_.data[i] = (error < 0.5) ? 0 : GRID_MAX;
+            }
         }
-        // for (unsigned int i = 0; i < grid_.data.size(); ++i) {
-        //   cout << static_cast<int>(grid_.data[i]) << ' ';
-        //   if (i % grid_.info.width == 0) {
-        //     cout << '\n';
-        //   }
-        // }
         auto image = to_mat(grid_);
         cv_bridge::CvImage ros_image(std_msgs::Header(), "mono8", image);
         gridimage_pub_.publish(ros_image.toImageMsg());
@@ -167,12 +159,9 @@ public:
         // find something relevant.
         nh_.param("max_range", max_range_, 5.0);
 
-        nh_.param("width", width_, 100);
-        nh_.param("height", height_, 100);
+        nh_.param("width", width_, 50);
+        nh_.param("height", height_, 50);
         nh_.param("resolution", resolution_, 0.5);
-
-        // Make sure TF is ready
-        ros::Duration(0.5).sleep();
 
         // TODO: Change to param
         scan_sub_ = nh_.subscribe("/vrep/depthSensor", 1,

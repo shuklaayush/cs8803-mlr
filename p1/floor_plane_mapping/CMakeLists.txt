@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(floor_plane_mapping)
 
 ## Use C++11
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -g -Wall)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,7 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS pcl_ros roscpp nav_msgs sensor_msgs tf message_generation cv_bridge image_transport)
 
 ## System dependencies are found with CMake's conventions
-find_package(OpenCV COMPONENTS core highgui REQUIRED)
+find_package(OpenCV REQUIRED)
  # find_package(OpenCV REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -95,8 +95,7 @@ add_executable(floor_plane_mapping src/floor_plane_mapping.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(floor_plane_mapping
-  ${catkin_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 )
 
 #############
