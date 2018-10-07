@@ -1,0 +1,31 @@
+name: p1
+root: .
+startup_window: ros
+windows:
+  - ros:
+      layout: a083,204x55,0,0{102x55,0,0[102x27,0,0{51x27,0,0,5,50x27,52,0,8},102x27,0,28,7],101x55,103,0,6}
+      panes:
+        - roscore
+        - vrep:
+          - until rostopic list ; do sleep 1; done
+          - clear
+          - vrep -h -s ../scenes/rosControlKinect3d.ttt
+        - rviz:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - rosrun rviz rviz
+        - rostopic:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - rostopic list
+  # - vim:
+  #     vim -O floor_plane_hough/src/floor_plane_hough.cpp floor_plane_ransac/src/floor_plane_ransac.cpp -c 'cd ~/ros_ws/build'
+  - build:
+      layout: even-horizontal
+      panes:
+        - build:
+          - cd ~/ros_ws/
+          - clear
+        - git:
+          - cd ..
+          - clear
