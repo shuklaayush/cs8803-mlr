@@ -88,14 +88,14 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(cylinder_detector src/floor_plane_hough.cpp)
+add_executable(cylinder src/floor_plane_hough.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(floor_plane_hough_node floor_plane_hough_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries( cylinder_detector 
+target_link_libraries( cylinder
     ${OpenCV_LIBRARIES} ${catkin_LIBRARIES}
 )
 
@@ -114,7 +114,7 @@ target_link_libraries( cylinder_detector
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS cylinder_detector 
+install(TARGETS cylinder
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
