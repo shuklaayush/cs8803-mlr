@@ -49,3 +49,6 @@ CATKIN_IGNORE
 # Swap files
 *.swp
 *.swo
+
+# Compile Commands
+compile_commands.json
