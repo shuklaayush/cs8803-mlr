@@ -177,9 +177,11 @@ public:
         // find something relevant.
         nh_.param("max_range", max_range_, 5.0);
 
-        nh_.param("width", width_, 50);
-        nh_.param("height", height_, 50);
-        nh_.param("resolution", resolution_, 0.5);
+        // Width, Height in cells
+        nh_.param("width", width_, 100);
+        nh_.param("height", height_, 100);
+        // Resolution in m/cell
+        nh_.param("resolution", resolution_, 0.1);
 
         // TODO: Change to param
         scan_sub_ = nh_.subscribe("/vrep/depthSensor", 1,
@@ -187,7 +189,7 @@ public:
         grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("grid", 1);
         gridimage_pub_ = it_.advertise("gridimage", 1);
 
-        grid_.header.frame_id = base_frame_;
+        grid_.header.frame_id = map_frame_;
 
         grid_.info.width = width_;
         grid_.info.height = height_;
