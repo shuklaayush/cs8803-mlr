@@ -1,0 +1,3 @@
+[submodule "p1/ros_task_manager"]
+	path = p1/ros_task_manager
+	url = https://github.com/cedricpradalier/ros_task_manager.git
