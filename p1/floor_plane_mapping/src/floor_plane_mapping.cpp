@@ -17,6 +17,7 @@
 #include <cmath>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <tuple>
 #include <vector>
 
 namespace {
@@ -25,9 +26,12 @@ using Matrix = Eigen::MatrixXf;
 using Vector = Eigen::VectorXf;
 using cv::Mat_;
 using nav_msgs::OccupancyGrid;
-using std::abs;
-using std::cout;
+using std::make_tuple;
+using std::tie;
+using std::tuple;
 
+constexpr auto MIN_NUM_POINTS = 2;
+constexpr auto ERROR_THRESH = 0.5;
 constexpr auto GRID_IMAGE_DEFAULT = 50;
 constexpr auto GRID_MAX = 100;
 }  // namespace
@@ -58,14 +62,14 @@ public:
         auto odds = exp(logodds);
         return odds / (1.0 + odds);
     }
-    void update_occupied() {
+    void update_occupied(double weight = 1.0) {
         if (logodds < thresh) {
-            logodds += increment_factor;
+            logodds += weight * increment_factor;
         }
     }
-    void update_empty() {
+    void update_empty(double weight = 1.0) {
         if (logodds > -thresh) {
-            logodds -= increment_factor;
+            logodds -= weight * increment_factor;
         }
     }
 };
@@ -73,21 +77,20 @@ public:
 class CountCell {
 private:
     double prob = 0.5;
-    double increment_factor = 0.1;
-    double thresh = 0.1;
+    double update_factor = 0.1;
 
 public:
     bool occupied() { return prob > 0.5; }
     bool free() { return prob < 0.5; }
     double occupied_probability() { return prob; }
-    void update_occupied() {
-        if (prob < 1.0 - thresh) {
-            prob += increment_factor;
+    void update_occupied(double weight = 1.0) {
+        if (prob < 1.0 - update_factor) {
+            prob += weight * update_factor;
         }
     }
-    void update_empty() {
-        if (prob > thresh) {
-            prob -= increment_factor;
+    void update_empty(double weight = 1.0) {
+        if (prob > update_factor) {
+            prob -= weight * update_factor;
         }
     }
 };
@@ -114,6 +117,32 @@ struct ProbabilisticOccGrid {
         }
         return outgrid;
     }
+    int index(double x, double y) {
+        auto x0 = info.origin.position.x;
+        auto y0 = info.origin.position.y;
+        auto res = info.resolution;
+        unsigned int xg = (x - x0) / res;
+        unsigned int yg = (y - y0) / res;
+        if (!(0 <= xg && xg < info.width) || !(0 <= yg && yg < info.height)) {
+            // Outside grid
+            return -1;
+        }
+        // Store point for update
+        return yg * info.width + xg;
+    }
+    tuple<double, double> point(int index) {
+        auto x0 = info.origin.position.x;
+        auto y0 = info.origin.position.y;
+        auto res = info.resolution;
+        // Get (x, y) in grid frame
+        auto xg = index % info.width;
+        auto yg = index / info.width;
+        // Convert to global frame
+        double x = x0 + xg * res;
+        double y = y0 + yg * res;
+        // Return as tuple
+        return make_tuple(x, y);
+    }
 };
 
 class FloorPlaneMapping {
@@ -128,7 +157,6 @@ protected:
 
     tf::TransformListener listener_;
 
-    std::string map_frame_;
     std::string base_frame_;
     double max_range_;
 
@@ -160,9 +188,9 @@ protected:  // ROS Callbacks
         vector<vector<unsigned int>> points(prob_grid_.data.size());
         // Filter
         for (auto i = 0U; i < pcl.size(); ++i) {
-            float x = pcl[i].x;
-            float y = pcl[i].y;
-            float d = hypot(x, y);
+            double x = pcl[i].x;
+            double y = pcl[i].y;
+            auto d = hypot(x, y);
             // In the sensor frame, this point would be inside the camera
             if (d < 1e-2) {
                 // Bogus point, ignore
@@ -176,19 +204,11 @@ protected:  // ROS Callbacks
                 // too far, ignore
                 continue;
             }
-            float x0 = prob_grid_.info.origin.position.x;
-            float y0 = prob_grid_.info.origin.position.y;
-            unsigned int x_grid =
-                (pcl_world_[i].x - x0) / prob_grid_.info.resolution;
-            unsigned int y_grid =
-                (pcl_world_[i].y - y0) / prob_grid_.info.resolution;
-            if (!(0 <= x_grid && x_grid < prob_grid_.info.width) ||
-                !(0 <= y_grid && y_grid < prob_grid_.info.height)) {
+            auto ix = prob_grid_.index(pcl_world_[i].x, pcl_world_[i].y);
+            if (ix == -1) {
                 // Outside grid, ignore
                 continue;
             }
-            // Store point for update
-            int ix = y_grid * prob_grid_.info.width + x_grid;
             points[ix].push_back(i);
         }
         return points;
@@ -197,16 +217,30 @@ protected:  // ROS Callbacks
     void update_grid(const vector<vector<unsigned int>>& points) {
         for (auto i = 0U; i < points.size(); ++i) {
             // Only update if point was in FOV
-            if (points[i].size() > 2) {
+            if (points[i].size() > MIN_NUM_POINTS) {
                 auto N = find_normal(points[i]);
                 auto a = N[0];
                 auto b = N[1];
                 auto error = 1.0 / (a * a + b * b + 1);
+                // Weigth probability by distance
+                double x, y;
+                tie(x, y) = prob_grid_.point(i);
+                geometry_msgs::PointStamped pt;
+                pt.header.frame_id = prob_grid_.header.frame_id;
+                pt.point.x = x;
+                pt.point.y = y;
+                geometry_msgs::PointStamped pt_base;
+                listener_.transformPoint(base_frame_, pt, pt_base);
+                double xb = pt_base.point.x;
+                double yb = pt_base.point.y;
+                auto d = hypot(xb, yb);
+                // Linear
+                auto weight = (max_range_ - d) / max_range_;
                 // Occupied
-                if (error < 0.5) {
-                    prob_grid_.data[i].update_occupied();
+                if (error < ERROR_THRESH) {
+                    prob_grid_.data[i].update_occupied(weight);
                 } else {
-                    prob_grid_.data[i].update_empty();
+                    prob_grid_.data[i].update_empty(weight);
                 }
             }
         }
@@ -220,15 +254,16 @@ protected:  // ROS Callbacks
         // Wait for transforms to become available
         listener_.waitForTransform(base_frame_, msg->header.frame_id,
                                    msg->header.stamp, ros::Duration(1.0));
-        listener_.waitForTransform(map_frame_, msg->header.frame_id,
-                                   msg->header.stamp, ros::Duration(1.0));
+        listener_.waitForTransform(prob_grid_.header.frame_id,
+                                   msg->header.frame_id, msg->header.stamp,
+                                   ros::Duration(1.0));
         // Transform to new frame
         pcl_ros::transformPointCloud(base_frame_, msg->header.stamp, temp,
                                      msg->header.frame_id, pcl_base_,
                                      listener_);
-        pcl_ros::transformPointCloud(map_frame_, msg->header.stamp, temp,
-                                     msg->header.frame_id, pcl_world_,
-                                     listener_);
+        pcl_ros::transformPointCloud(
+            prob_grid_.header.frame_id, msg->header.stamp, temp,
+            msg->header.frame_id, pcl_world_, listener_);
         // Filter points
         auto gridpoints = filter_points(temp);
         // Update grid
@@ -247,18 +282,19 @@ public:
         // The parameter below described the frame in which the point cloud
         // must be projected to be estimated. You need to understand TF
         // enough to find the correct value to update in the launch file
-        nh_.param("map_frame", map_frame_, std::string("/world"));
+        std::string map_frame;
+        nh_.param("map_frame", map_frame, std::string("/world"));
         nh_.param("base_frame", base_frame_, std::string("/bubbleRob"));
         // This parameter defines the maximum range at which we want to
         // consider points. Experiment with the value in the launch file to
         // find something relevant.
-        nh_.param("max_range", max_range_, 3.0);
+        nh_.param("max_range", max_range_, 5.0);
 
         // Width, Height in cells
         int width;
-        nh_.param("width", width, 100);
+        nh_.param("width", width, 102);
         int height;
-        nh_.param("height", height, 100);
+        nh_.param("height", height, 102);
         // Resolution in m/cell
         double resolution;
         nh_.param("resolution", resolution, 0.1);
@@ -269,7 +305,7 @@ public:
         grid_pub_ = nh_.advertise<OccupancyGrid>("grid", 1);
         gridimage_pub_ = it_.advertise("gridimage", 1);
 
-        prob_grid_.header.frame_id = map_frame_;
+        prob_grid_.header.frame_id = map_frame;
 
         prob_grid_.info.width = width;
         prob_grid_.info.height = height;
@@ -281,11 +317,6 @@ public:
         prob_grid_.info.origin.orientation.w = 1;
 
         prob_grid_.data.resize(width * height);
-        // grid_.data.resize(width_ * height_);
-        //
-        // for (auto& it : grid_.data) {
-        //     it = -1;
-        // }
     }
 };
 
