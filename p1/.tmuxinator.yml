@@ -20,6 +20,7 @@ windows:
           - rosrun floor_plane_mapping floor_plane_mapping
         - auto:
           - until rosservice info /mux/select; do sleep 1; done
+          - until rosnode info /task_client; do sleep 1; done
           - clear
           - rosservice call /mux/select '/mux/autoCommand'
         - task_server:
@@ -31,7 +32,7 @@ windows:
           - clear
           - rosrun floor_nav test_graph.py
   - vim:
-      vim -O floor_plane_mapping/src/floor_plane_mapping.cpp -c 'cd ~/ros_ws/build'
+      vim -O floor_plane_mapping/src/floor_plane_mapping.cpp
   - build:
       layout: even-horizontal
       panes:
