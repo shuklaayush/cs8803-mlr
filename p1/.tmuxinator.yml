@@ -3,7 +3,7 @@ root: .
 startup_window: ros
 windows:
   - ros:
-      layout: cd03,205x57,0,0{103x57,0,0[103x28,0,0{52x28,0,0,14,50x28,53,0,16},103x28,0,29,17],101x57,104,0[101x28,104,0{50x28,104,0,18,50x28,155,0,23},101x28,104,29,21]}
+      layout: cea5,205x57,0,0{103x57,0,0[103x28,0,0{52x28,0,0,0,50x28,53,0,3},103x28,0,29,4],101x57,104,0[101x28,104,0{50x28,104,0,5,50x28,155,0,6},101x28,104,29{50x28,104,29,7,50x28,155,29,9}]}
       panes:
         - roscore
         - vrep:
@@ -18,14 +18,18 @@ windows:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
           - rosrun floor_plane_mapping floor_plane_mapping
-        - steer:
+        - auto:
+          - until rosservice info /mux/select; do sleep 1; done
+          - clear
+          - rosservice call /mux/select '/mux/autoCommand'
+        - task_server:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - rosrun rqt_robot_steering rqt_robot_steering
-        - rostopic:
+          - roslaunch floor_nav launch_vrep.launch
+        - path:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - rostopic list
+          - rosrun floor_nav test_graph.py
   - vim:
       vim -O floor_plane_mapping/src/floor_plane_mapping.cpp -c 'cd ~/ros_ws/build'
   - build:
