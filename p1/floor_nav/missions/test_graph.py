@@ -22,6 +22,7 @@ try:
     node_seq = [2, 1, 4, 3, 5, 6, 0, 9, 8, 10, 7, 11]
     for node in node_seq:
         tc.GoTo(goal_x=g.vs[node]["x"],goal_y=g.vs[node]["y"], max_velocity=0.5, k_v=1.0, max_angular_velocity=1.0)
+        tc.Scan(angular_velocity=0.3);
     tc.Wait(duration=1.0)
 
 except TaskException, e:

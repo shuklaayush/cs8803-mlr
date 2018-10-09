@@ -36,6 +36,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 #   Service2.srv
 # )
 generate_dynamic_reconfigure_options(
+  cfg/TaskScan.cfg
   cfg/TaskGoTo.cfg
   cfg/TaskSetHeading.cfg
   cfg/TaskSetManual.cfg
@@ -102,6 +103,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE
 ADD_LIBRARY( TaskSetHeading SHARED tasks/TaskSetHeading.cpp)
 TARGET_LINK_LIBRARIES(TaskSetHeading ${catkin_LIBRARIES} dl)
 add_dependencies(TaskSetHeading ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+ADD_LIBRARY( TaskScan SHARED tasks/TaskScan.cpp)
+TARGET_LINK_LIBRARIES(TaskScan ${catkin_LIBRARIES} dl)
+add_dependencies(TaskScan ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 ADD_LIBRARY( TaskGoTo SHARED tasks/TaskGoTo.cpp)
 TARGET_LINK_LIBRARIES(TaskGoTo ${catkin_LIBRARIES} dl)
