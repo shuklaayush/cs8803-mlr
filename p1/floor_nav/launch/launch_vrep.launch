@@ -6,9 +6,9 @@
         <!-- After install -->
         <!-- <param name="lib_path" value="$(find floor_nav)/tasks"/> -->
         <!-- While developing -->
-        <param name="lib_path" value="$(find floor_nav)/../../devel/share/floor_nav/tasks"/>
+        <param name="lib_path" value="/home/GTL/ashukla2/ros_ws/devel/share/floor_nav/tasks/"/>
         <param name="base_frame" value="/bubbleRob"/>
-        <param name="reference_frame" value="/bubbleRob"/>
+        <param name="reference_frame" value="/world"/>
     </node>
     <node name="viz_graph" pkg="floor_graph" type="viz_graph.py" output="screen">
     </node>
