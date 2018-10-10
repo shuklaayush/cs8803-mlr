@@ -32,7 +32,7 @@ using std::tuple;
 using std::cout;
 
 constexpr auto MIN_NUM_POINTS = 2;
-constexpr auto ERROR_THRESH = 0.5;
+constexpr auto ERROR_THRESH = 0.8;
 constexpr auto GRID_IMAGE_DEFAULT = 50;
 constexpr auto GRID_MAX = 100;
 }  // namespace
