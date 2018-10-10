@@ -29,6 +29,7 @@ using nav_msgs::OccupancyGrid;
 using std::make_tuple;
 using std::tie;
 using std::tuple;
+using std::cout;
 
 constexpr auto MIN_NUM_POINTS = 2;
 constexpr auto ERROR_THRESH = 0.5;
@@ -288,7 +289,7 @@ public:
         // This parameter defines the maximum range at which we want to
         // consider points. Experiment with the value in the launch file to
         // find something relevant.
-        nh_.param("max_range", max_range_, 5.0);
+        nh_.param("max_range", max_range_, 4.5);
 
         // Width, Height in cells
         int width;
