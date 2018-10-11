@@ -23,6 +23,7 @@ windows:
           - until rosnode info /task_client; do sleep 1; done
           - clear
           - rosservice call /mux/select '/mux/autoCommand'
+          - rosrun cylinder_detector_ransac cylinder_detector_ransac
         - task_server:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear

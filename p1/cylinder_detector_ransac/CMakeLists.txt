@@ -51,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS pcl_ros roscpp sensor_msgs tf visualizat
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES floor_plane_ransac
+#  LIBRARIES cylinder_detector
   CATKIN_DEPENDS pcl_ros roscpp sensor_msgs tf visualization_msgs
   message_runtime
 #  DEPENDS system_lib
@@ -80,17 +80,17 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(floor_plane_ransac
-#   src/${PROJECT_NAME}/floor_plane_ransac.cpp
+# add_library(cylinder_detector
+#   src/${PROJECT_NAME}/cylinder_detector_ransac.cpp
 # )
 
 ## Declare a cpp executable
-add_executable(cylinder_detector_ransac src/floor_plane_ransac.cpp)
+add_executable(cylinder_detector_ransac src/cylinder_detector_ransac.cpp)
 #add_executable(cylinder_detector_array  src/cylinder_detector_array.cpp) 
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(floor_plane_ransac_node floor_plane_ransac_generate_messages_cpp)
+# add_dependencies(cylinder_detector_node cylinder_detector_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(cylinder_detector_ransac
@@ -137,7 +137,7 @@ install(TARGETS cylinder_detector_ransac
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_floor_plane_ransac.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_cylinder_detector_ransac.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
