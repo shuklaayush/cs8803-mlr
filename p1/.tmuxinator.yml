@@ -33,7 +33,7 @@ windows:
           - clear
           - rosrun floor_nav test_graph.py
   - vim:
-      vim -O floor_plane_mapping/src/floor_plane_mapping.cpp
+      vim -O floor_plane_mapping/src/floor_plane_mapping.cpp cylinder_detector_ransac/src/cylinder_detector_ransac.cpp
   - build:
       layout: even-horizontal
       panes:

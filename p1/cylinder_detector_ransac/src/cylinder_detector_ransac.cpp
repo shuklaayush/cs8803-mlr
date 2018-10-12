@@ -61,14 +61,6 @@ public:
         return m;
     }
 
-    void merge(const Circle &c) {
-        if (c.vote_ > vote_) {
-            x_ = c.x_;
-            y_ = c.y_;
-            r_ = c.r_;
-        }
-    }
-
     double error(double x, double y) {
         return sqrt(abs((x - x_) * (x - x_) + (y - y_) * (y - y_) - r_ * r_));
     }
@@ -189,6 +181,7 @@ protected:  // ROS Callbacks
                                          ros::Time(0), world_to_base);
                 double xb = world_to_base.getOrigin().x();
                 double yb = world_to_base.getOrigin().y();
+                // Heuristic for checking concave down
                 if (distance(xb, yb, xmean, ymean) >
                     distance(xb, yb, Cx, Cy)) {
                     continue;
@@ -206,6 +199,7 @@ protected:  // ROS Callbacks
                     // Check stored markers
                     bool is_better = true;
                     for (auto &it : cylinders) {
+                        // Intersecting cylinder
                         if (it.contains(c)) {
                             if (c.vote_ > it.vote_) {
                                 it.vote_ = 0;
