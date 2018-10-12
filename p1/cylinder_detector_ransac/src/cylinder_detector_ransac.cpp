@@ -9,6 +9,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #include <Eigen/Core>
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -53,9 +54,9 @@ public:
         m.scale.z = 2;
 
         m.color.a = 0.5;
-        m.color.r = 0.5;
+        m.color.r = 1.0;
         m.color.g = 0.0;
-        m.color.b = 1.0;
+        m.color.b = 0.0;
 
         return m;
     }
@@ -172,15 +173,27 @@ protected:  // ROS Callbacks
                            (x2 * x2 + y2 * y2) * (x1 * y3 - x3 * y1) +
                            (x3 * x3 + y3 * y3) * (x2 * y1 - x1 * y2);
 
-                double c_x = -B / (2 * A);
-                double c_y = -C / (2 * A);
+                double Cx = -B / (2 * A);
+                double Cy = -C / (2 * A);
                 double r = sqrt((B * B + C * C - 4 * A * D) / (4 * A * A));
 
                 if (r > RADIUS_MAX) {
                     continue;
                 }
 
-                Circle c(c_x, c_y, r);
+                auto xmean = (x1 + x2 + x3) / 3.0;
+                auto ymean = (y1 + y2 + y3) / 3.0;
+
+                tf::StampedTransform world_to_base;
+                listener_.lookupTransform(world_frame_, base_frame_,
+                                         ros::Time(0), world_to_base);
+                double xb = world_to_base.getOrigin().x();
+                double yb = world_to_base.getOrigin().y();
+                if (distance(xb, yb, xmean, ymean) >
+                    distance(xb, yb, Cx, Cy)) {
+                    continue;
+                }
+                Circle c(Cx, Cy, r);
                 // Iterate over all points
                 for (auto j = 0U; j < n; ++j) {
                     double x = pcl_world_[pidx[j]].x;
