@@ -235,7 +235,7 @@ public:
         nh_.param("base_frame", base_frame_, std::string("/bubbleRob"));
         nh_.param("max_range", max_range_, 4.0);
         nh_.param("n_samples", n_samples, 2000);
-        nh_.param("tolerance", tolerance, 0.02);
+        nh_.param("tolerance", tolerance, 0.03);
 
         ROS_INFO("RANSAC: %d iteration with %f tolerance", n_samples,
                  tolerance);
