@@ -26,10 +26,10 @@ using Matrix = Eigen::MatrixXf;
 using Vector = Eigen::VectorXf;
 using cv::Mat_;
 using nav_msgs::OccupancyGrid;
+using std::cout;
 using std::make_tuple;
 using std::tie;
 using std::tuple;
-using std::cout;
 
 constexpr auto MIN_NUM_POINTS = 2;
 constexpr auto ERROR_THRESH = 0.8;
@@ -53,23 +53,24 @@ Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
 class LogOddCell {
 private:
     double logodds = 0.0;
-    double increment_factor = 0.5;
-    double thresh = 30.0;
+    static constexpr double increment_factor = 0.5;
+    static constexpr double thresh = 0.0;
+    static constexpr double prob_limit = 30.0;
 
 public:
-    bool occupied() { return logodds > 0; }
-    bool free() { return logodds < 0; }
+    bool occupied() { return logodds > thresh; }
+    bool free() { return logodds < -thresh; }
     double occupied_probability() {
         auto odds = exp(logodds);
         return odds / (1.0 + odds);
     }
     void update_occupied(double weight = 1.0) {
-        if (logodds < thresh) {
+        if (logodds < prob_limit) {
             logodds += weight * increment_factor;
         }
     }
     void update_empty(double weight = 1.0) {
-        if (logodds > -thresh) {
+        if (logodds > -prob_limit) {
             logodds -= weight * increment_factor;
         }
     }
@@ -78,11 +79,12 @@ public:
 class CountCell {
 private:
     double prob = 0.5;
+    double thresh = 0.5;
     double update_factor = 0.1;
 
 public:
-    bool occupied() { return prob > 0.5; }
-    bool free() { return prob < 0.5; }
+    bool occupied() { return prob > thresh; }
+    bool free() { return prob < thresh; }
     double occupied_probability() { return prob; }
     void update_occupied(double weight = 1.0) {
         if (prob < 1.0 - update_factor) {
@@ -108,10 +110,8 @@ struct ProbabilisticOccGrid {
         outgrid.info = info;
         outgrid.data.resize(data.size());
         for (auto i = 0U; i < data.size(); ++i) {
-            if (data[i].occupied()) {
-                outgrid.data[i] = GRID_MAX;
-            } else if (data[i].free()) {
-                outgrid.data[i] = 0;
+            if (data[i].free() || data[i].occupied()) {
+                outgrid.data[i] = GRID_MAX * data[i].occupied_probability();
             } else {
                 outgrid.data[i] = -1;
             }
@@ -236,7 +236,7 @@ protected:  // ROS Callbacks
                 double yb = pt_base.point.y;
                 auto d = hypot(xb, yb);
                 // Linear
-                auto weight = (max_range_ - d) / max_range_;
+                auto weight = exp(-d);
                 // Occupied
                 if (error < ERROR_THRESH) {
                     prob_grid_.data[i].update_occupied(weight);

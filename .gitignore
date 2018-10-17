@@ -52,3 +52,6 @@ CATKIN_IGNORE
 
 # Compile Commands
 compile_commands.json
+
+#Videos
+*.avi
