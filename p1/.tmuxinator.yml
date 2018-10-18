@@ -9,7 +9,7 @@ windows:
         - vrep:
           - until rostopic list ; do sleep 1; done
           - clear
-          - vrep -h -s ../scenes/rosControlKinect3d.ttt
+          - vrep -h -s ../scenes/rosControlKinect3d-test.ttt
         - rviz:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
@@ -27,11 +27,11 @@ windows:
         - task_server:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - roslaunch floor_nav launch_vrep.launch
+          - roslaunch floor_nav launch_vrep-test.launch
         - path:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - rosrun floor_nav test_graph.py
+          - rosrun floor_nav test_graph-test.py
   - vim:
       vim -O floor_plane_mapping/src/floor_plane_mapping.cpp cylinder_detector_ransac/src/cylinder_detector_ransac.cpp
   - build:
