@@ -1,0 +1,16 @@
+<launch>
+     <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
+
+    <node pkg="shore_follower" type="shore_follower_drive" name="shore_follower_drive" output="screen">
+      launch-prefix="xterm -e gdb --args">
+      <param name="deploy_file" value="$(find shore_follower)/models/deploy_fast.prototxt" />
+      <param name="model_file" value="$(find shore_follower)/models/caffenet_train_iter_100000.caffemodel" />
+      <param name="mean_file" value="$(find shore_follower)/models/imagenet_mean_fast.binaryproto" />
+      <!-- rotation speed corresponding to left or right commands -->
+      <param name="twist_factor" value="0.0" />
+      <param name="linear_vel" value="0.0" />
+
+      <remap from="/shore_follower_drive/image" to="/vrep/visionSensor"/>
+      <remap from="/shore_follower_drive/twist" to="/mux/autoCommand"/>
+  </node>
+</launch>
