@@ -1,12 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <launch>
 
-    <node pkg="floor_plane_deep" type="floor_plane_classifier" name="floor_plane_classifier" output="screen">
-      launch-prefix="xterm -e gdb --args">
-      <param name="deploy_file" value="$(find floor_plane_deep)/models/deploy.prototxt" />
-      <param name="model_file" value="$(find floor_plane_deep)/models/caffenet_train_iter_75228.caffemodel" />
-      <param name="mean_file" value="$(find floor_plane_deep)/models/imagenet_mean.binaryproto" />
-      <param name="thumb_size" value="32" />
+  <node pkg="floor_plane_deep" type="floor_plane_classifier" name="floor_plane_classifier" output="screen" launch-prefix="xterm -e gdb --args">
+    <param name="deploy_file" value="$(find floor_plane_deep)/models/deploy.prototxt" />
+    <param name="model_file" value="$(find floor_plane_deep)/models/caffenet_train_iter_75228.caffemodel" />
+    <param name="mean_file" value="$(find floor_plane_deep)/models/imagenet_mean.binaryproto" />
+    <param name="thumb_size" value="32" />
 
-      <remap from="/floor_plane_classifier/image" to="/vrep/visionSensor"/>
+    <remap from="/floor_plane_classifier/image" to="/vrep/visionSensor"/>
   </node>
 </launch>
