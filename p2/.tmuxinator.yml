@@ -3,7 +3,7 @@ root: .
 startup_window: ros
 windows:
   - ros:
-      layout: cea5,205x57,0,0{103x57,0,0[103x28,0,0{52x28,0,0,0,50x28,53,0,3},103x28,0,29,4],101x57,104,0[101x28,104,0{50x28,104,0,5,50x28,155,0,6},101x28,104,29{50x28,104,29,7,50x28,155,29,9}]}
+      layout: 2a7e,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,2,50x28,52,0,5},102x28,0,29,4],102x57,103,0,3}]
       panes:
         - roscore
         - vrep:
@@ -13,27 +13,10 @@ windows:
         - rviz:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
-          - rosrun rviz rviz -d p1.rviz
-        - mapping:
-          - until rostopic info /vrep/info; do sleep 1; done
-          - clear
-          - rosrun floor_plane_mapping floor_plane_mapping
-        - auto:
-          - until rosservice info /mux/select; do sleep 1; done
-          - until rosnode info /task_client; do sleep 1; done
-          - clear
-          - rosservice call /mux/select '/mux/autoCommand'
-          - rosrun cylinder_detector_ransac cylinder_detector_ransac
-        - task_server:
-          - until rostopic info /vrep/info; do sleep 1; done
-          - clear
-          - roslaunch floor_nav launch_vrep-test.launch
-        - path:
-          - until rostopic info /vrep/info; do sleep 1; done
-          - clear
-          - rosrun floor_nav test_graph-test.py
+          # - rosrun rviz rviz -d p1.rviz
+        - rosrun rviz rviz
   - vim:
-      vim -O floor_plane_mapping/src/floor_plane_mapping.cpp cylinder_detector_ransac/src/cylinder_detector_ransac.cpp
+      vim -O shore_follower/src/shore_follower_drive.cpp
   - build:
       layout: even-horizontal
       panes:
