@@ -247,7 +247,7 @@ layer {
 layer {
   name: "fc8"
   type: "InnerProduct"
-  bottom: "conv1"
+  bottom: "fc7"
   top: "fc8"
   param {
     lr_mult: 1
