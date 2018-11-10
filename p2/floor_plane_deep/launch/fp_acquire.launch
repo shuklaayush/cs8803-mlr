@@ -12,7 +12,7 @@
     <param name="base_frame" value="/bubbleRob" />
     <param name="max_range" value="3.0" />
     <param name="thumb_size" value="32" />
-    <param name="out_dir" value="/home/GTL/ashukla2/Git/cs8803-mlr/p2/data" />
+    <param name="out_dir" value="/home/GTL/ashukla2/Git/cs8803-mlr/p2/floor_plane_deep/data" />
     <param name="height_threshold" value="0.05" />
     <param name="min_displacement" value="0.1" />
     <param name="min_rotation" value="0.1" />
