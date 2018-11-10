@@ -58,3 +58,8 @@ compile_commands.json
 
 # Image Data
 data/
+
+# Temporary Caffe files
+*.binaryproto
+*.mdb
+p2/floor_plane_deep/models/out.txt
