@@ -2,6 +2,8 @@
 
 """
 Split input data to training and validation.
+
+WARNING: Be careful with the TRAIN_DIR and VAL_DIR paths.
 """
 
 import os
@@ -9,6 +11,7 @@ import random
 import shutil
 from argparse import ArgumentParser
 
+random.seed(24)
 #  ROOT = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.getcwd()
 LABEL_FILE = 'labels.txt'
