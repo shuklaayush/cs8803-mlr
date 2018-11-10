@@ -4,7 +4,17 @@
     <param name="autorepeat_rate" value="30" />
   </node>
 
-  <node pkg="turtlejoy" name="turtlejoy_node" type="roscpp_node"/>
+  <node pkg="turtlejoy" type="roscpp_node" name="turtlejoy_node"/>
+
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+    <remap from="cloud_in" to="/vrep/hokuyoSensor"/>
+  </node>
+
+  <node name="operator" pkg="nav2d_operator" type="operator">
+    <remap from="cmd_vel" to="/vrep/twistCommand"/>
+    <rosparam file="$(find floor_plane_deep)/param/operator.yaml"/>
+    <rosparam file="$(find floor_plane_deep)/param/costmap.yaml" ns="local_map"/>
+  </node>
 
   <node pkg="floor_plane_deep" type="floor_plane_extract" name="floor_plane_extract" output="screen">
     launch-prefix="xterm -e gdb --args"
@@ -12,7 +22,7 @@
     <param name="base_frame" value="/bubbleRob" />
     <param name="max_range" value="3.0" />
     <param name="thumb_size" value="32" />
-    <param name="out_dir" value="/home/GTL/ashukla2/Git/cs8803-mlr/p2/floor_plane_deep/data" />
+    <param name="out_dir" value="$(find floor_plane_deep)/data" />
     <param name="height_threshold" value="0.05" />
     <param name="min_displacement" value="0.1" />
     <param name="min_rotation" value="0.1" />
