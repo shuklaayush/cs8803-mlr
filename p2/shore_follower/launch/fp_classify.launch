@@ -2,7 +2,8 @@
 <launch>
   <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
 
-  <node pkg="shore_follower" type="shore_follower_drive" name="shore_follower_drive" output="screen" launch-prefix="xterm -e gdb --args">
+  <node pkg="shore_follower" type="shore_follower_drive" name="shore_follower_drive" output="screen">
+    launch-prefix="xterm -e gdb --args"
     <param name="deploy_file" value="$(find shore_follower)/models/deploy.prototxt" />
     <param name="model_file" value="$(find shore_follower)/models/caffenet_full_train_iter_60000.caffemodel" />
     <param name="mean_file" value="$(find shore_follower)/models/imagenet_mean.binaryproto" />

@@ -2,7 +2,8 @@
 <launch>
   <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
 
-  <node pkg="shore_follower" type="shore_follower_observe" name="shore_follower_observe" output="screen" launch-prefix="xterm -e gdb --args">
+  <node pkg="shore_follower" type="shore_follower_observe" name="shore_follower_observe" output="screen">
+    launch-prefix="xterm -e gdb --args"
     <param name="world_frame" value="/world" />
     <param name="base_frame" value="/bubbleRob" />
     <param name="out_dir" value="/tmp" />
