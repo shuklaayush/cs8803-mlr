@@ -1,3 +1,6 @@
 [submodule "p1/ros_task_manager"]
 	path = p1/ros_task_manager
 	url = https://github.com/cedricpradalier/ros_task_manager.git
+[submodule "p2/navigation_2d"]
+	path = p2/navigation_2d
+	url = https://github.com/skasperski/navigation_2d.git
