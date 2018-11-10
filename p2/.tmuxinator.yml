@@ -3,7 +3,7 @@ root: .
 startup_window: ros
 windows:
   - ros:
-      layout: 2a7e,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,2,50x28,52,0,5},102x28,0,29,4],102x57,103,0,3}]
+      layout: 2a6a,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,0,50x28,52,0,3},102x28,0,29,2],102x57,103,0,1}]
       panes:
         - roscore
         - vrep:
@@ -14,9 +14,13 @@ windows:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
           # - rosrun rviz rviz -d p1.rviz
-        - rosrun rviz rviz
+          - rosrun rviz rviz
+        - roslaunch:
+          - until rostopic list ; do sleep 1; done
+          - clear
+          - roslaunch floor_plane_deep fp_acquire.launch
   - vim:
-      vim -O shore_follower/src/shore_follower_drive.cpp
+      vim -O floor_plane_deep/src/floor_plane_extract.cpp
   - build:
       layout: even-horizontal
       panes:
