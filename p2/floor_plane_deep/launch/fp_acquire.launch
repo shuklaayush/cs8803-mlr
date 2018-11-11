@@ -10,7 +10,9 @@
     <remap from="cloud_in" to="/vrep/hokuyoSensor"/>
   </node>
 
-  <node name="operator" pkg="nav2d_operator" type="operator">
+  <param name="robot_frame" value="bubbleRob"/>
+  <param name="odometry_frame" value="bubbleRob"/>
+  <node name="operator" pkg="nav2d_operator" type="operator" output="screen">
     <remap from="cmd_vel" to="/vrep/twistCommand"/>
     <rosparam file="$(find floor_plane_deep)/param/operator.yaml"/>
     <rosparam file="$(find floor_plane_deep)/param/costmap.yaml" ns="local_map"/>
