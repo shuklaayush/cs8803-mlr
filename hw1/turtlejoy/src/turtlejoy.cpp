@@ -21,7 +21,7 @@ private:
     int a_axis = 0;
 
     double l_scale = 1.0;
-    double a_scale = -1.0;
+    double a_scale = 1.0;
 };
 
 TurtleJoy::TurtleJoy() {
