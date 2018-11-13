@@ -16,8 +16,8 @@
 
   <node pkg="floor_plane_deep" type="floor_plane_extract" name="floor_plane_extract" output="screen">
     launch-prefix="xterm -e gdb --args"
-    <param name="world_frame" value="/world" />
-    <param name="base_frame" value="/bubbleRob" />
+    <param name="world_frame" value="world" />
+    <param name="base_frame" value="bubbleRob" />
     <param name="max_range" value="3.0" />
     <param name="thumb_size" value="32" />
     <param name="out_dir" value="$(find floor_plane_deep)/data" />

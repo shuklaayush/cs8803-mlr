@@ -259,6 +259,8 @@ public:
         // Make sure TF is ready
         ros::Duration(0.5).sleep();
         tf::StampedTransform tfw;
+        listener_.waitForTransform(base_frame_, world_frame_, ros::Time::now(),
+                                   ros::Duration(10.0));
         listener_.lookupTransform(base_frame_, world_frame_, ros::Time(0), tfw);
         last_pose.x = tfw.getOrigin().x() - 1.0;
         last_pose.y = tfw.getOrigin().y() - 1.0;

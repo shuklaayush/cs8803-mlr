@@ -31,4 +31,4 @@ cost_scaling_factor: 2.0
 lethal_cost_threshold: 100
 
 observation_sources: kinect #scan
-kinect: {sensor_frame: kinect_visionSensor, data_type: PointCloud2, topic: /vrep/depthSensor, expected_update_rate: 0.4, observation_persistence: 0.0, marking: true, clearing: true}
+kinect: {data_type: PointCloud2, topic: /vrep/depthSensor, expected_update_rate: 0.4, observation_persistence: 0.0, marking: true, clearing: true}
