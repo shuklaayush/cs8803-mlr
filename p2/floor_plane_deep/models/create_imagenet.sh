@@ -14,7 +14,7 @@ rm -rf $OUTDIR/floorplane_train_lmdb $OUTDIR/floorplane_val_lmdb
 
 # Set RESIZE=true to resize the images to 256x256. Leave as false if images have
 # already been resized using another tool.
-RESIZE=true
+RESIZE=false
 if $RESIZE; then
   RESIZE_HEIGHT=256
   RESIZE_WIDTH=256

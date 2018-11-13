@@ -9,7 +9,7 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 128
+    crop_size: 32
     mean_file: "floorplane_train_lmdb/imagenet_mean.binaryproto"
   }
 # mean pixel / channel-wise mean instead of mean image
@@ -36,7 +36,7 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 128
+    crop_size: 32
     mean_file: "floorplane_train_lmdb/imagenet_mean.binaryproto"
   }
 # mean pixel / channel-wise mean instead of mean image
