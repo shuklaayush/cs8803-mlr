@@ -21,7 +21,7 @@
 #include <Eigen/Core>
 
 namespace {
-constexpr auto THRESH = 0.2f;
+constexpr auto THRESH = 0.1f;
 }
 
 class FloorPlaneExtract {

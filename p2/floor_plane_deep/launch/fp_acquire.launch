@@ -30,5 +30,7 @@
     <remap from="/floor_plane_extract/info" to="/vrep/visionSensorInfo"/>
   </node>
 
-  <!-- <node pkg="rostopic" type="rostopic" name="operator_pub" args="pub /cmd nav2d_operator/cmd Velocity: 1.0, Turn: 0.0, Mode: 0" output="screen"/> -->
+  <!-- <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pcl_to_scan"> -->
+  <!--   <remap from="cloud_in" to="/vrep/hokuyoSensor"/> -->
+  <!-- </node> -->
 </launch>
