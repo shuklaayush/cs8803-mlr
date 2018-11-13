@@ -4,7 +4,7 @@ update_frequency: 5.0
 publish_frequency: 1.0
 
 #set if you want the voxel map published
-publish_voxel_map: true
+# publish_voxel_map: true
 
 #set to true if you want to initialize the costmap from a static map
 static_map: false
@@ -20,15 +20,15 @@ map_type: costmap
 track_unknown_space: true
 
 transform_tolerance: 0.3
-obstacle_range: 4.0
-min_obstacle_height: 0.0
-max_obstacle_height: 2.0
+obstacle_range: 3.0
+# min_obstacle_height: 0.0
+# max_obstacle_height: 2.0
 raytrace_range: 4.5
 
 robot_radius: 0.4
-inflation_radius: 0.75
+inflation_radius: 0.5
 cost_scaling_factor: 2.0
 lethal_cost_threshold: 100
-observation_sources: scan
-scan: {sensor_frame: Hokuyo, data_type: LaserScan, expected_update_rate: 0.4,
-  observation_persistence: 0.0, marking: true, clearing: true, max_obstacle_height: 0.4, min_obstacle_height: 0.08}
+
+observation_sources: kinect #scan
+kinect: {sensor_frame: kinect_visionSensor, data_type: PointCloud2, topic: /vrep/depthSensor, expected_update_rate: 0.4, observation_persistence: 0.0, marking: true, clearing: true}
