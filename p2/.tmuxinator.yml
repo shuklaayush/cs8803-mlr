@@ -1,26 +1,30 @@
-name: p1
+name: p2
 root: .
 startup_window: ros
 windows:
   - ros:
-      layout: 2a6a,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,0,50x28,52,0,3},102x28,0,29,2],102x57,103,0,1}]
+      layout: 280f,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,7,50x28,52,0,11},102x28,0,29,9],102x57,103,0[102x28,103,0,8,102x28,103,29,10]}
       panes:
         - roscore
         - vrep:
           - until rostopic list ; do sleep 1; done
           - clear
-          - vrep -h -s ../scenes/lakeExample.ttt
+          - vrep -h -s $VREP_SCENES/lakeExample.ttt
         - rviz:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
           # - rosrun rviz rviz -d p1.rviz
           - rosrun rviz rviz
         - roslaunch:
-          - until rostopic list ; do sleep 1; done
+          - until rostopic info /vrep/info; do sleep 1; done
           - clear
           - roslaunch floor_plane_deep fp_acquire.launch
+        - rospub:
+          - until rostopic info /cmd; do sleep 1; done
+          - clear
+          - rostopic pub /cmd nav2d_operator/cmd "1.0" "0.0" "0" 
   - vim:
-      vim -O floor_plane_deep/src/floor_plane_extract.cpp
+      vim -O floor_plane_deep/src/floor_plane_extract.cpp floor_plane_deep/param/operator.yaml
   - build:
       layout: even-horizontal
       panes:
