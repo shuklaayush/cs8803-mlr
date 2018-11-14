@@ -1,0 +1,35 @@
+name: p2
+root: .
+startup_window: ros
+windows:
+  - ros:
+      layout: 280f,205x57,0,0{102x57,0,0[102x28,0,0{51x28,0,0,7,50x28,52,0,11},102x28,0,29,9],102x57,103,0[102x28,103,0,8,102x28,103,29,10]}
+      panes:
+        - roscore
+        - vrep:
+          - until rostopic list ; do sleep 1; done
+          - clear
+          - vrep -s $VREP_SCENES/lakeExample.ttt
+        - rviz:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          # - rosrun rviz rviz -d p1.rviz
+          - rosrun rviz rviz
+        - roslaunch:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - roslaunch shore_follower fp_classify_fast.launch
+        - rospub:
+          - until rostopic list; do sleep 1; done
+          - clear
+  - vim:
+      vim -O shore_follower/src/shore_follower_drive.cpp
+  - build:
+      layout: even-horizontal
+      panes:
+        - build:
+          - cd ~/ros_ws/
+          - clear
+        - git:
+          - cd ..
+          - clear

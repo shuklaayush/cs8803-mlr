@@ -95,9 +95,9 @@ class ShoreFollowerObserve {
             cv::Mat img(cv_bridge::toCvShare(img_msg,"bgr8")->image);
             bool save_it = true;
             int label = 1;
-            if (last_command_.angular.z<-rotation_threshold_) {
+            if (last_command_.angular.z>rotation_threshold_) {
                 label = 0;
-            } else if (last_command_.angular.z>rotation_threshold_) {
+            } else if (last_command_.angular.z<-rotation_threshold_) {
                 label = 2;
             }
             save_it = (type_counter_[label] < (unsigned)max_image_per_type_);

@@ -2,15 +2,15 @@
 # Create the imagenet lmdb inputs
 # N.B. set the path to the imagenet train + val data dirs
 
-EXAMPLE=.
-DATA=.
 TOOLS=/home/gpu_user/caffe/build/tools
 #TOOLS=/cs-share/pradalier/caffe/build/tools
+DATA=/home/GTL/ashukla2/Git/cs8803-mlr/p2/shore_follower/data
+OUTDIR=.
 
-TRAIN_DATA_ROOT=train/
-VAL_DATA_ROOT=val/
+TRAIN_DATA_ROOT=$DATA/train/
+VAL_DATA_ROOT=$DATA/val/
 
-rm -rf $EXAMPLE/*_lmdb
+rm -rf $OUTDIR/followshore_train_lmdb $OUTDIR/followshore_val_lmdb
 
 # Set RESIZE=true to resize the images to 256x256. Leave as false if images have
 # already been resized using another tool.
@@ -44,8 +44,8 @@ GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_width=$RESIZE_WIDTH \
     --shuffle \
     $TRAIN_DATA_ROOT \
-    $DATA/train/labels.txt \
-    $EXAMPLE/followshore_train_lmdb
+    $TRAIN_DATA_ROOT/labels.txt \
+    $OUTDIR/followshore_train_lmdb
 
 echo "Creating val lmdb..."
 
@@ -54,7 +54,7 @@ GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_width=$RESIZE_WIDTH \
     --shuffle \
     $VAL_DATA_ROOT \
-    $DATA/val/labels.txt \
-    $EXAMPLE/followshore_val_lmdb
+    $VAL_DATA_ROOT/labels.txt \
+    $OUTDIR/followshore_val_lmdb
 
 echo "Done."

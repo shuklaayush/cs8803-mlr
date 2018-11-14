@@ -64,6 +64,21 @@ class ShoreFollowerDrive {
             geometry_msgs::Twist out;
             std::vector<float> res = caffe.run(img);
             // TODO: convert res into out, using twist_factor_ and linear_vel_
+            int max_ix = std::distance(res.begin(), std::max_element(res.begin(), res.end()));
+            switch (max_ix) {
+              case 0:
+                out.linear.x = 0.4*linear_vel_;
+                out.angular.z = twist_factor_;
+                break;
+              case 1:
+                out.linear.x = linear_vel_;
+                out.angular.z = 0;
+                break;
+              case 2:
+                out.linear.x = 0.4*linear_vel_;
+                out.angular.z = -twist_factor_;
+                break;
+            }
             return out;
         }
 
