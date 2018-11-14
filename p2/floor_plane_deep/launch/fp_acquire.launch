@@ -29,8 +29,4 @@
     <remap from="/floor_plane_extract/image" to="/vrep/visionSensor"/>
     <remap from="/floor_plane_extract/info" to="/vrep/visionSensorInfo"/>
   </node>
-
-  <!-- <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pcl_to_scan"> -->
-  <!--   <remap from="cloud_in" to="/vrep/hokuyoSensor"/> -->
-  <!-- </node> -->
 </launch>
