@@ -62,4 +62,7 @@ data/
 # Temporary Caffe files
 *.binaryproto
 *.mdb
-p2/floor_plane_deep/models/out.txt
+p2/floor_plane_deep/scripts/log.txt
+p2/shore_follower/scripts/log.txt
+*.caffemodel
+*.solverstate
