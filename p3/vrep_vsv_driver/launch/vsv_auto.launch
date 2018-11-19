@@ -1,0 +1,29 @@
+<launch>
+
+ <!-- joy node -->
+  <node respawn="false" pkg="joy" type="joy_node" name="joy" >
+    <!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+    <!-- <param name="deadzone" value="0.12" /> -->
+    <param name="autorepeat_rate" value="10.0" />
+  </node>
+
+ <!-- Axes -->
+
+
+  <node pkg="vrep_vsv_driver" type="vsv_arm_ik.py" name="arm_ik" output="screen">
+      <param name="vsv_name" value="VSV"/>
+      <param name="max_velocity" value="0.5"/>
+      <remap from="/arm_ik/joint_command" to="/VSV/aggregated/command"/>
+      <remap from="/arm_ik/joint_state" to="/VSV/aggregated/state"/>
+  </node>
+
+  <node pkg="vrep_vsv_driver" type="vsv_driver.py" name="vsv_driver" output="screen">
+      <param name="vsv_name" value="VSV"/>
+      <param name="min_radius" value="5.0"/>
+  </node>
+
+  <node pkg="vrep_vsv_driver" type="vsv_arm.py" name="vsv_arm" output="screen">
+      <param name="vsv_name" value="VSV"/>
+  </node>
+
+</launch>

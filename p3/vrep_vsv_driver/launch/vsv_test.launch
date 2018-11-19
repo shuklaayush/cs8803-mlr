@@ -1,0 +1,10 @@
+<launch>
+
+
+  <node pkg="vrep_vsv_driver" type="test_point_stamped.py" name="tp" output="screen">
+      <remap from="/tp/position_stamped" to="/arm_ik/position_stamped"/>
+      <remap from="/tp/position_command" to="/arm_ik/position"/>
+      <remap from="/tp/tool_command" to="/arm_ik/tool_orientation"/>
+  </node>
+
+</launch>
