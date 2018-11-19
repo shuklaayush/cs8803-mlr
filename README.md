@@ -3,7 +3,7 @@
 - `alias vrep="sh path/to/vrep.sh"`
 - `export VREP_SCENES="path/to/vrep/scenes"`
 - `catkin-make -DCMAKE_EXPORT_COMPILE_COMMANDS=1`
-  * `ln -s ROS_WS/build/compile_commands.json compile_commands.json`
+  * `ln -s ROS_WS/build/compile_commands.json
 
 ## Dependencies
 - ROS
