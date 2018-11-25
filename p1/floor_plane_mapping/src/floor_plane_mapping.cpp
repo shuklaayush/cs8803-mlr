@@ -37,16 +37,19 @@ constexpr auto GRID_IMAGE_DEFAULT = 50;
 constexpr auto GRID_MAX = 100;
 }  // namespace
 
+// Convert OccupancyGrid msg to OpenCV image
 Mat_<uint8_t> to_mat(const OccupancyGrid& grid) {
     Mat_<uint8_t> image(grid.info.height, grid.info.width, GRID_IMAGE_DEFAULT);
+    // Iterate over each cell
     for (auto i = 0U; i < grid.data.size(); ++i) {
         auto x = i % grid.info.width;
         auto y = grid.info.height - i / grid.info.width - 1;
+        // Check if not unknown
         if (grid.data[i] >= 0) {
             image(y, x) = (GRID_MAX - grid.data[i]) * 255 / 100;
         }
     }
-    return image;  // Check Move semantics
+    return image;
 }
 
 // Reference: http://docs.ros.org/kinetic/api/hector_mapping/html/
@@ -87,11 +90,13 @@ public:
     bool free() { return prob < thresh; }
     double occupied_probability() { return prob; }
     void update_occupied(double weight = 1.0) {
+        // Skip if probability already too high
         if (prob < 1.0 - update_factor) {
             prob += weight * update_factor;
         }
     }
     void update_empty(double weight = 1.0) {
+        // Skip if probability already too low
         if (prob > update_factor) {
             prob -= weight * update_factor;
         }
@@ -105,10 +110,12 @@ struct ProbabilisticOccGrid {
     vector<CellType> data;
     // Convert to ros::OccupancyGrid data
     OccupancyGrid ros_grid() {
+        // Initialize
         OccupancyGrid outgrid;
         outgrid.header = header;
         outgrid.info = info;
         outgrid.data.resize(data.size());
+        // Convert each cell to appropriate format
         for (auto i = 0U; i < data.size(); ++i) {
             if (data[i].free() || data[i].occupied()) {
                 outgrid.data[i] = GRID_MAX * data[i].occupied_probability();
@@ -118,12 +125,14 @@ struct ProbabilisticOccGrid {
         }
         return outgrid;
     }
+    // Get index of grid cell corresponding to point (x, y)
     int index(double x, double y) {
         auto x0 = info.origin.position.x;
         auto y0 = info.origin.position.y;
         auto res = info.resolution;
         unsigned int xg = (x - x0) / res;
         unsigned int yg = (y - y0) / res;
+        // Check if point is inside grid
         if (!(0 <= xg && xg < info.width) || !(0 <= yg && yg < info.height)) {
             // Outside grid
             return -1;
@@ -131,6 +140,7 @@ struct ProbabilisticOccGrid {
         // Store point for update
         return yg * info.width + xg;
     }
+    // Get (x, y) coordinates of grid cell corresponding to index
     tuple<double, double> point(int index) {
         auto x0 = info.origin.position.x;
         auto y0 = info.origin.position.y;
@@ -166,6 +176,7 @@ protected:
     pcl::PointCloud<pcl::PointXYZ> pcl_world_;
 
 protected:  // ROS Callbacks
+    // Find parameters of line normal to plane formed by points
     Vector find_normal(const vector<unsigned int>& points) {
         auto n = points.size();
         // AX = b
@@ -179,15 +190,16 @@ protected:  // ROS Callbacks
             A(i, 2) = 1;
             b(i, 0) = pcl_world_[ix].z;
         }
+        // Find least squares solution
         Vector X = A.colPivHouseholderQr().solve(b);
-        return X;  // TODO: Check move semantics
+        return X;
     }
-
+    // Remove unnecessary points from PointCloud msg and store their indices in
+    // a vector for each Grid cell
     vector<vector<unsigned int>> filter_points(
         const pcl::PointCloud<pcl::PointXYZ>& pcl) {
-        // Grid to store indices of points
         vector<vector<unsigned int>> points(prob_grid_.data.size());
-        // Filter
+        // Filter points
         for (auto i = 0U; i < pcl.size(); ++i) {
             double x = pcl[i].x;
             double y = pcl[i].y;
@@ -205,42 +217,49 @@ protected:  // ROS Callbacks
                 // too far, ignore
                 continue;
             }
+            // Get index of grid cell in which point belongs
             auto ix = prob_grid_.index(pcl_world_[i].x, pcl_world_[i].y);
             if (ix == -1) {
                 // Outside grid, ignore
                 continue;
             }
+            // Store point for this grid cell
             points[ix].push_back(i);
         }
         return points;
     }
-
+    // Update OccupancyGrid
     void update_grid(const vector<vector<unsigned int>>& points) {
         for (auto i = 0U; i < points.size(); ++i) {
-            // Only update if point was in FOV
+            // Check if there are at least three points in cell
             if (points[i].size() > MIN_NUM_POINTS) {
+                // Find equation of normal of plane formed by points
                 auto N = find_normal(points[i]);
                 auto a = N[0];
                 auto b = N[1];
+                // Check if normal is vertical to the ground
                 auto error = 1.0 / (a * a + b * b + 1);
-                // Weigth probability by distance
+                // Get absolute coordinates of grid cell
                 double x, y;
                 tie(x, y) = prob_grid_.point(i);
                 geometry_msgs::PointStamped pt;
                 pt.header.frame_id = prob_grid_.header.frame_id;
                 pt.point.x = x;
                 pt.point.y = y;
+                // Get coordinates of grid cell in robot frame
                 geometry_msgs::PointStamped pt_base;
                 listener_.transformPoint(base_frame_, pt, pt_base);
                 double xb = pt_base.point.x;
                 double yb = pt_base.point.y;
+                // Calculate distance of grid cell from robot
                 auto d = hypot(xb, yb);
-                // Linear
+                // Weigh probability by distance
                 auto weight = exp(-d);
-                // Occupied
                 if (error < ERROR_THRESH) {
+                    // Normal is not vertical -> Cell occupied
                     prob_grid_.data[i].update_occupied(weight);
                 } else {
+                    // Normal is vertical -> Cell empty
                     prob_grid_.data[i].update_empty(weight);
                 }
             }
@@ -306,17 +325,19 @@ public:
         grid_pub_ = nh_.advertise<OccupancyGrid>("grid", 1);
         gridimage_pub_ = it_.advertise("gridimage", 1);
 
+        // Create OccupancyGrid msg
         prob_grid_.header.frame_id = map_frame;
-
+        // Set dimensions (in cells)
         prob_grid_.info.width = width;
         prob_grid_.info.height = height;
+        // Set resolution (in m/cell)
         prob_grid_.info.resolution = resolution;
-
+        // Set position of origin (Bottom left)
         prob_grid_.info.origin.position.x = -(resolution * width) / 2;
         prob_grid_.info.origin.position.y = -(resolution * height) / 2;
         prob_grid_.info.origin.position.z = 0;
         prob_grid_.info.origin.orientation.w = 1;
-
+        // Set size as number of cells
         prob_grid_.data.resize(width * height);
     }
 };
