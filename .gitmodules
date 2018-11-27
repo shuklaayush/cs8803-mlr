@@ -4,3 +4,6 @@
 [submodule "p2/navigation_2d"]
 	path = p2/navigation_2d
 	url = https://github.com/skasperski/navigation_2d.git
+[submodule "p3/pid"]
+	path = p3/pid
+	url = https://bitbucket.org/AndyZe/pid.git
