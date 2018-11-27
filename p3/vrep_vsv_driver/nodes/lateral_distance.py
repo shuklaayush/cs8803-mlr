@@ -48,7 +48,7 @@ class LateralDistanceCalculator:
             rospy.logwarn(ex)
             return
         pcl_robot = do_transform_cloud(pcl_msg, trans)
-        points = []
+        #  points = []
         for p in read_points(
                 pcl_robot, field_names=('x', 'y', 'z'), skip_nans=True):
             if -10.0 < p[1] and p[1] < 0.0 and abs(p[2]) < 0.5:
