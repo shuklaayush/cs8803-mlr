@@ -8,7 +8,7 @@ from std_msgs.msg import Float64
 class TwistController:
     def __init__(self):
         self.input_topic = rospy.get_param("input_topic", "/lateral_distance/control_effort")
-        self.velocity = rospy.get_param("velocity", 3.0)
+        self.velocity = rospy.get_param("velocity", 2.0)
 
         rospy.init_node("twist_robot")
         self.sub = rospy.Subscriber(self.input_topic, Float64,

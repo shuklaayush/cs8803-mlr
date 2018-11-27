@@ -22,13 +22,14 @@ windows:
         - distance:
           - until rosnode info /shore_setpoint; do sleep 1; done
           - clear
-          # - rosrun vrep_vsv_driver lateral_distance.py
+          - rostopic pub -r1 /arm_ik/position geometry_msgs/Point "2.0" "0.0" "1.0"
+          # - rosrun vrep_vsv_driver twist_arm.py
         - twist:
           - until rosnode info /shore_controller; do sleep 1; done
           - clear
           # - rosrun vrep_vsv_driver twist_robot.py
   - vim:
-      vim -O vrep_vsv_driver/nodes/teleop_geom.py
+      vim -O vrep_vsv_driver/nodes/twist_robot.py vrep_vsv_driver/nodes/twist_arm.py
   - build:
       layout: even-horizontal
       panes:

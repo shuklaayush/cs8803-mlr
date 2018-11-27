@@ -26,8 +26,8 @@
     <param name="upper_limit" value="10" />
     <param name="lower_limit" value="-10" />
     <param name="windup_limit" value="10" />
-    <param name="max_loop_frequency" value="100.0" />
-    <param name="min_loop_frequency" value="100.0" />
+    <param name="max_loop_frequency" value="10.0" />
+    <param name="min_loop_frequency" value="10.0" />
     <remap from="state" to="/lateral_distance/distance" />
     <remap from="setpoint" to="/lateral_distance/setpoint" />
     <remap from="control_effort" to="/lateral_distance/control_effort" />
@@ -37,17 +37,17 @@
 
   <node pkg="vrep_vsv_driver" type="twist_robot.py" name="twist_robot" />
 
-  <node pkg="rostopic" type="rostopic" name="arm_setpoint" args="pub /vertical_distance/setpoint std_msgs/Float64 0.2"/>
+  <node pkg="rostopic" type="rostopic" name="arm_setpoint" args="pub /vertical_distance/setpoint std_msgs/Float64 0.4"/>
 
   <node pkg="pid" type="controller" name="arm_controller" output="screen" >
-    <param name="Kp" value="1.0" />
+    <param name="Kp" value="0.5" />
     <param name="Ki" value="0.0" />
     <param name="Kd" value="0.1" />
-    <param name="upper_limit" value="10" />
-    <param name="lower_limit" value="-10" />
-    <param name="windup_limit" value="10" />
-    <param name="max_loop_frequency" value="100.0" />
-    <param name="min_loop_frequency" value="100.0" />
+    <param name="upper_limit" value="0.5" />
+    <param name="lower_limit" value="-0.5" />
+    <param name="windup_limit" value="0.5" />
+    <param name="max_loop_frequency" value="10.0" />
+    <param name="min_loop_frequency" value="10.0" />
     <remap from="state" to="/vertical_distance/distance" />
     <remap from="setpoint" to="/vertical_distance/setpoint" />
     <remap from="control_effort" to="/vertical_distance/control_effort" />
