@@ -31,13 +31,14 @@ class ArmDistanceCalculator:
         points = []
         for ix, p in enumerate(read_points(
                 pcl_msg, field_names=('x', 'y', 'z'), skip_nans=True)):
-            if p[2] < min_p:
+            if p[2] < min_z:
                 min_z = p[2]
-            points.append(p if abs(p[1]) < self.epsilon else [np.nan, np.nan])
+            points.append(p if abs(p[1]) < self.epsilon else [np.nan, np.nan, np.nan])
 
         points_np = np.array(points)
         indices = points_np[:, 0].argsort()
-        #  indices = indices[:np.where(np.isnan(points_np[:, 0]))[0][0]
+        points_np = points_np[indices]
+        indices = indices[:np.where(np.isnan(points_np[:, 0]))[0][0]]
 
         self.vertical_pub.publish(min_z)
 
@@ -59,15 +60,15 @@ class ArmDistanceCalculator:
                 pcl_robot, field_names=('y', 'z'), skip_nans=True)):
             points_robot.append(p)
 
-        points_np_robot = np.array(points_robot)
-        points_np_robot[indices]
-        above_thresh = points_np_robot[:, 1] > self.z_threshold
+        points_robot_np = np.array(points_robot)
+        points_robot_np[indices]
+        above_thresh = points_robot_np[:, 1] > self.z_threshold
         if np.any(above_thresh):
             corner_ix = np.argmax(above_thresh)
             lateral_distance = -points_np[corner_ix][0]
         else:
             lateral_distance = 1.0
-        self.lateral_pub.publish()
+        self.lateral_pub.publish(lateral_distance)
 
     def run(self):
         rate = rospy.Rate(10)

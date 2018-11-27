@@ -56,7 +56,7 @@
   <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot" args="/lateral_distance/setpoint /lateral_distance/distance/data" /> -->
   <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot" args="/arm_distance/vertical/setpoint /arm_distance/vertical/distance/data" /> -->
 
-  <node pkg="vrep_vsv_driver" type="vertical_distance.py" name="vertical_distance" />
+  <node pkg="vrep_vsv_driver" type="arm_distance.py" name="arm_distance" />
 
   <node pkg="vrep_vsv_driver" type="mine_detector.py" name="mine_detector" />
   <!-- <node pkg="vrep_vsv_driver" type="twist_arm.py" name="twist_arm" /> -->
