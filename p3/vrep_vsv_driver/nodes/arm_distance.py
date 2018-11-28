@@ -2,6 +2,7 @@
 import numpy as np
 import rospy
 import tf2_ros as tf2
+import matplotlib.pyplot as plt
 
 from math import isinf
 from sensor_msgs.msg import PointCloud2
@@ -16,7 +17,7 @@ class ArmDistanceCalculator:
         self.robot_frame = rospy.get_param("robot_frame", "VSV/ground")
 
         self.epsilon = 0.01
-        self.z_threshold = 0.05
+        self.z_threshold = 0.02
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
 
@@ -25,6 +26,15 @@ class ArmDistanceCalculator:
                                     self.kinect_cb)
         self.vertical_pub = rospy.Publisher('~vertical/distance', Float64, queue_size=1)
         self.lateral_pub = rospy.Publisher('~lateral/distance', Float64, queue_size=1)
+
+    def plot_distance(self, points):
+        plt.ion()
+        ax = plt.gca()
+        #  ax.set_xlim([-10.0, 0.0])
+        #  ax.set_ylim([-0.1, 0.5])
+        ax.plot(points[:, 0], points[:, 2])
+        plt.pause(0.0001)
+        plt.clf()
 
     def kinect_cb(self, pcl_msg):
         min_z = float('inf')
@@ -38,7 +48,10 @@ class ArmDistanceCalculator:
         points_np = np.array(points)
         indices = points_np[:, 0].argsort()
         points_np = points_np[indices]
-        indices = indices[:np.where(np.isnan(points_np[:, 0]))[0][0]]
+        first_nan = np.where(np.isnan(points_np[:, 0]))[0][0]
+        indices = indices[:first_nan]
+        #  points_np = points_np[:first_nan]
+        #  self.plot_distance(points_np)
 
         self.vertical_pub.publish(min_z)
 
@@ -61,13 +74,13 @@ class ArmDistanceCalculator:
             points_robot.append(p)
 
         points_robot_np = np.array(points_robot)
-        points_robot_np[indices]
-        above_thresh = points_robot_np[:, 1] > self.z_threshold
-        if np.any(above_thresh):
-            corner_ix = np.argmax(above_thresh)
+        points_robot_np = points_robot_np[indices]
+        below_thresh = points_robot_np[:, 1] < self.z_threshold
+        if np.any(below_thresh):
+            corner_ix = np.argmax(below_thresh)
             lateral_distance = -points_np[corner_ix][0]
         else:
-            lateral_distance = 1.0
+            lateral_distance = -1.0
         self.lateral_pub.publish(lateral_distance)
 
     def run(self):
