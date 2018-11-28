@@ -15,11 +15,12 @@ class LateralDistanceCalculator:
         self.pcl_topic = rospy.get_param("laser_topic", "/vrep/hokuyoSensor")
         self.robot_frame = rospy.get_param("robot_frame", "VSV/ground")
 
+        rospy.init_node('lateral_distance')
+
         self.z_threshold = 0.05
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
 
-        rospy.init_node('lateral_distance')
         self.sub = rospy.Subscriber(self.pcl_topic, PointCloud2,
                                     self.hokuyo_cb)
         self.distance_pub = rospy.Publisher('~distance', Float64, queue_size=1)

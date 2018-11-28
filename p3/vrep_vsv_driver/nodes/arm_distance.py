@@ -16,12 +16,13 @@ class ArmDistanceCalculator:
         self.pcl_topic = rospy.get_param("pcl_topic", "/vrep/depthSensor")
         self.robot_frame = rospy.get_param("robot_frame", "VSV/ground")
 
+        rospy.init_node('arm_distance')
+
         self.epsilon = 0.01
         self.z_threshold = 0.02
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
 
-        rospy.init_node('arm_distance')
         self.sub = rospy.Subscriber(self.pcl_topic, PointCloud2,
                                     self.kinect_cb)
         self.vertical_pub = rospy.Publisher('~vertical/distance', Float64, queue_size=1)

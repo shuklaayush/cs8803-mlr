@@ -12,12 +12,13 @@ class MineDetector:
         self.world_frame = rospy.get_param("world_frame", "world")
         self.sensor_frame = rospy.get_param("sensor_frame", "VSV/Tool")
 
+        rospy.init_node("mine_detector")
+
         self.sensor_thresh = 0.01
         self.distance_thresh = 1.0
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
 
-        rospy.init_node("mine_detector")
         self.sub = rospy.Subscriber(self.sensor_topic, Float32, self.sensor_cb)
         self.marker_pub = rospy.Publisher("~markers", MarkerArray, queue_size=1)
         self.mines = list()
