@@ -79,9 +79,9 @@ class ArmDistanceCalculator:
         below_thresh = points_robot_np[:, 1] < self.z_threshold
         if np.any(below_thresh):
             corner_ix = np.argmax(below_thresh)
-            lateral_distance = -points_np[corner_ix][0]
+            lateral_distance = points_np[corner_ix][0]
         else:
-            lateral_distance = -1.0
+            lateral_distance = 1.0
         self.lateral_pub.publish(lateral_distance)
 
     def run(self):
