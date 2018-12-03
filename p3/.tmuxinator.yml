@@ -9,7 +9,7 @@ windows:
         - vrep:
           - until rostopic list ; do sleep 1; done
           - clear
-          - vrep -s $VREP_SCENES/lakeExampleArm2.ttt
+          - vrep -s $VREP_SCENES/lakeExampleDrone.ttt
         - rviz:
           - until rostopic info /vrep/info; do sleep 1; done
           - clear
