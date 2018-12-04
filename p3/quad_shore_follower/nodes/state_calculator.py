@@ -27,6 +27,7 @@ class StateCalculator:
         ats = message_filters.ApproximateTimeSynchronizer([laser1_sub, laser2_sub], queue_size=1, slop=1.0)
         ats.registerCallback(self.laser_cb)
         self.lateral_pub = rospy.Publisher('drone/lateral/state', Float64, queue_size=1)
+        self.vertical_pub = rospy.Publisher('drone/vertical/state', Float64, queue_size=1)
         self.angular = rospy.Publisher('drone/angular/state', Float64, queue_size=1)
 
     def plot(self, points):
@@ -40,6 +41,7 @@ class StateCalculator:
         plt.clf()
 
     def laser_cb(self, pcl_msg1, pcl_msg2):
+        max_d = {'z': 0}
         def find_edge(pcl_msg):
             source_frame = pcl_msg.header.frame_id
             lookup_time = pcl_msg.header.stamp
@@ -57,7 +59,9 @@ class StateCalculator:
             points_y = points_y[indices_sorted]
             points_z = points_z[indices_sorted]
 
-            corner_point = -1.0
+            max_d['z'] = max(max_d['z'], points_z.max())
+
+            edge_y = -1.0
             for y, z in zip(points_y, points_z):
                 if z > self.z_threshold:
                     edge_y = y
@@ -71,6 +75,7 @@ class StateCalculator:
             return
  
         self.lateral_pub.publish((y1+y2) / 2)
+        self.vertical_pub.publish(max_d['z'])
         self.angular.publish(y1-y2)
 
     def run(self):

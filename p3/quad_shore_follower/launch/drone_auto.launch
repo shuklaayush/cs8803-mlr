@@ -36,7 +36,9 @@
 
   <node pkg="quad_shore_follower" type="drone_controller.py" name="drone_controller" />
 
-  <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot" args="/drone/lateral/setpoint /drone/lateral/distance" />
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="lateral_plot" args="/drone/lateral/state /drone/lateral/state" /> -->
+
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="angular_plot" args="/drone/angular/setpoint /drone/angular/state" /> -->
 
   <node pkg="quad_shore_follower" type="mine_detector.py" name="mine_detector" />
 </launch>
