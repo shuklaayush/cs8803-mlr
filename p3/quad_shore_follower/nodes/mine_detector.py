@@ -8,11 +8,9 @@ from math import sqrt
 
 class MineDetector:
     def __init__(self):
-        self.sensor_topic = rospy.get_param("input", "/vrep/metalDetector")
+        self.sensor_topic = rospy.get_param("sensor", "/vrep/metalDetector")
         self.world_frame = rospy.get_param("world_frame", "world")
-        self.sensor_frame = rospy.get_param("sensor_frame", "VSV/Tool")
-
-        rospy.init_node("mine_detector")
+        self.sensor_frame = rospy.get_param("sensor_frame", "drone")
 
         self.sensor_thresh = 0.01
         self.distance_thresh = 1.0
@@ -21,7 +19,7 @@ class MineDetector:
 
         self.sub = rospy.Subscriber(self.sensor_topic, Float32, self.sensor_cb)
         self.marker_pub = rospy.Publisher("~markers", MarkerArray, queue_size=1)
-        self.mines = list()
+        self.mines = []
 
     def sensor_cb(self, msg):
         marker_array = MarkerArray()
@@ -65,12 +63,13 @@ class MineDetector:
                 self.mines.append({'x': x, 'y': y, 'count': 1})
 
     def run(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(30)
         while not rospy.is_shutdown():
             rate.sleep()
 
 
 if __name__ == '__main__':
+    rospy.init_node("mine_detector")
     try:
         md = MineDetector()
         md.run()
