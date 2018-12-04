@@ -24,7 +24,7 @@ class StateCalculator:
 
         laser1_sub = message_filters.Subscriber(self.laser1, PointCloud2)
         laser2_sub = message_filters.Subscriber(self.laser2, PointCloud2)
-        ats = message_filters.ApproximateTimeSynchronizer([laser1_sub, laser2_sub], queue_size=1, slop=0.1)
+        ats = message_filters.ApproximateTimeSynchronizer([laser1_sub, laser2_sub], queue_size=1, slop=1.0)
         ats.registerCallback(self.laser_cb)
         self.lateral_pub = rospy.Publisher('drone/lateral/state', Float64, queue_size=1)
         self.angular = rospy.Publisher('drone/angular/state', Float64, queue_size=1)
@@ -43,33 +43,35 @@ class StateCalculator:
         def find_edge(pcl_msg):
             source_frame = pcl_msg.header.frame_id
             lookup_time = pcl_msg.header.stamp
-            try:
-                trans_robot = self.tf_buffer.lookup_transform(self.robot_frame,
+            trans_robot = self.tf_buffer.lookup_transform(self.robot_frame,
                                                         source_frame, lookup_time,
                                                         rospy.Duration(5.0))
-                trans_world = self.tf_buffer.lookup_transform(self.world_frame,
+            trans_world = self.tf_buffer.lookup_transform(self.world_frame,
                                                         source_frame, lookup_time,
                                                         rospy.Duration(5.0))
-            except (tf2.LookupException, tf2.ExtrapolationException) as ex:
-                rospy.logwarn(ex)
-                return
             pcl_robot = do_transform_cloud(pcl_msg, trans_robot)
             pcl_world = do_transform_cloud(pcl_msg, trans_world)
-            points_robot = read_points(pcl_robot, field_names=('x', 'y'), skip_nans=True)
-            points_world = read_points(pcl_world, field_names=('z'), skip_nans=True)
-            #  points = []
-            for p, p_w in zip(points_robot, points_world):
-                if p_w[0] > self.z_threshold:
-                    corner_point = p
-                #  points.append([p[1], p_w[0]])
-            #  self.plot(points)
-            return corner_point
+            points_y = np.squeeze(np.array(list(read_points(pcl_robot, field_names=('y'), skip_nans=True))))
+            points_z = np.squeeze(np.array(list(read_points(pcl_world, field_names=('z'), skip_nans=True))))
+            indices_sorted = points_y.argsort()
+            points_y = points_y[indices_sorted]
+            points_z = points_z[indices_sorted]
 
-        x1, y1 = find_edge(pcl_msg1)
-        x2, y2 = find_edge(pcl_msg2)
+            corner_point = -1.0
+            for y, z in zip(points_y, points_z):
+                if z > self.z_threshold:
+                    edge_y = y
+            return edge_y
+
+        try:
+            y1 = find_edge(pcl_msg1)
+            y2 = find_edge(pcl_msg2)
+        except (NameError, tf2.LookupException, tf2.ExtrapolationException) as ex:
+            rospy.logwarn(ex)
+            return
  
         self.lateral_pub.publish((y1+y2) / 2)
-        self.angular.publish((y1-y2) / (x1-x2))
+        self.angular.publish(y1-y2)
 
     def run(self):
         rate = rospy.Rate(30)
