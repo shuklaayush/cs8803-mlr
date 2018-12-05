@@ -12,7 +12,7 @@ class MineDetector:
         self.world_frame = rospy.get_param("world_frame", "world")
         self.sensor_frame = rospy.get_param("sensor_frame", "drone")
 
-        self.sensor_thresh = 0.01
+        self.sensor_thresh = 0.9
         self.distance_thresh = 1.0
         self.tf_buffer = tf2.Buffer()
         self.listener = tf2.TransformListener(self.tf_buffer)
@@ -40,7 +40,7 @@ class MineDetector:
         self.marker_pub.publish(marker_array)
 
         val = msg.data
-        if abs(val - 1.0) < self.sensor_thresh:
+        if val > self.sensor_thresh:
             try:
                 trans = self.tf_buffer.lookup_transform(self.world_frame, self.sensor_frame, rospy.Time())
             except tf2.LookupException as ex:

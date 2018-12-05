@@ -1,0 +1,34 @@
+name: p3
+root: .
+startup_window: ros
+windows:
+  - ros:
+      layout: b9d0,204x55,0,0{102x55,0,0[102x27,0,0{51x27,0,0,0,50x27,52,0,3},102x27,0,28,2],101x55,103,0[101x27,103,0,1,101x27,103,28,4]}
+      panes:
+        - roscore
+        - vrep:
+          - until rostopic list ; do sleep 1; done
+          - clear
+          - vrep -s $VREP_SCENES/lakeExampleDrone.ttt
+        - rviz:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - clear
+          - rosrun rviz rviz -d drone.rviz
+        - roslaunch:
+          - until rostopic info /vrep/info; do sleep 1; done
+          - sleep 10
+          - clear
+          - roslaunch drone_shore_follower drone_auto.launch
+        - rostopic:
+          # - clear
+  - vim:
+      vim -O drone_shore_follower/nodes/state_calculator.py drone_shore_follower/nodes/state_calculator.py 
+  - build:
+      layout: even-horizontal
+      panes:
+        - build:
+          - cd ~/ros_ws/
+          - clear
+        - git:
+          - cd ..
+          - clear

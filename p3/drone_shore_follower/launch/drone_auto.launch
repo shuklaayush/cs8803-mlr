@@ -3,9 +3,9 @@
   <node pkg="rostopic" type="rostopic" name="shore_angular_setpoint" args="pub /drone/angular/setpoint std_msgs/Float64 0.0"/>
 
   <node pkg="pid" type="controller" name="shore_angular_controller" output="screen" >
-    <param name="Kp" value="-1.0" />
+    <param name="Kp" value="-2.0" />
     <param name="Ki" value="-0.0" />
-    <param name="Kd" value="-0.0" />
+    <param name="Kd" value="-0.2" />
     <param name="upper_limit" value="1.0" />
     <param name="lower_limit" value="-1.0" />
     <param name="windup_limit" value="1.0" />
@@ -21,7 +21,7 @@
   <node pkg="pid" type="controller" name="shore_lateral_controller" output="screen" >
     <param name="Kp" value="-1.0" />
     <param name="Ki" value="-0.0" />
-    <param name="Kd" value="-0.0" />
+    <param name="Kd" value="-0.2" />
     <param name="upper_limit" value="1.0" />
     <param name="lower_limit" value="-1.0" />
     <param name="windup_limit" value="1.0" />
@@ -32,13 +32,13 @@
     <remap from="control_effort" to="/drone/lateral/control_effort" />
   </node>
 
-  <node pkg="quad_shore_follower" type="state_calculator.py" name="state" />
+  <node pkg="drone_shore_follower" type="state_calculator.py" name="state" />
 
-  <node pkg="quad_shore_follower" type="drone_controller.py" name="drone_controller" />
-
-  <!-- <node pkg="rqt_plot" type="rqt_plot" name="lateral_plot" args="/drone/lateral/state /drone/lateral/state" /> -->
+  <node pkg="drone_shore_follower" type="drone_controller.py" name="drone_controller" />
 
   <!-- <node pkg="rqt_plot" type="rqt_plot" name="angular_plot" args="/drone/angular/setpoint /drone/angular/state" /> -->
 
-  <node pkg="quad_shore_follower" type="mine_detector.py" name="mine_detector" />
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="lateral_plot" args="/drone/lateral/state /drone/lateral/state" /> -->
+
+  <node pkg="drone_shore_follower" type="mine_detector.py" name="mine_detector" />
 </launch>
