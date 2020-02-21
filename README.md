@@ -1,5 +1,5 @@
 # CS8803 (Machine Learning for Robotics) Projects
-![](../media/p1.gif)
+![Project 1](../media/p1.gif)
 ## Dependencies
 - ROS
 - V-REP
